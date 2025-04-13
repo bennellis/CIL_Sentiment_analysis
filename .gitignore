@@ -1,1 +1,4 @@
 .idea/
+*optuna_study.db
+mlruns
+data/MNIST/

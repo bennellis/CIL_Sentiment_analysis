@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from Hyperparameters.registry import register_model
 
 
-@register_model("MyCoolModel")
+@register_model("SimpleModel", enforce_clean=False)
 class ModelDummy(nn.Module):
     def __init__(self, dropout=0.0):
         super(ModelDummy, self).__init__()
@@ -29,3 +29,14 @@ class ModelDummy(nn.Module):
         x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
         return output
+
+    @staticmethod
+    def suggest_hyperparams(trial):
+        from Hyperparameters.Utils.Misc import suggest_namespaced_params
+
+        param_defs = {
+            "dropout": lambda t, n: t.suggest_float(n, 0.1, 0.9)
+        }
+
+        return suggest_namespaced_params(trial, "ModelDummy", param_defs)
+
