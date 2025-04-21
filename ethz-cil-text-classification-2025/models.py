@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from sklearn.linear_model import LogisticRegression
 from scipy.sparse import csr_matrix
-
+from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,9 +10,24 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 import torch.nn.functional as F
+from tqdm.auto import tqdm
 
 import numpy as np
 from typing import List, Optional, Callable, Tuple, Dict, Any
+import custom_dataloader
+import importlib
+import logging
+
+# Set up basic config for logging
+logging.basicConfig(
+    filename="logs/training.log",        # Log file name
+    filemode="a",                   # Append mode
+    level=logging.INFO,             # Log level
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Format
+    datefmt="%Y-%m-%d %H:%M:%S"     # Timestamp format
+)
+
+
 
 
 class BaseModel(ABC, nn.Module):
@@ -50,42 +65,59 @@ class BaseModel(ABC, nn.Module):
 
     def fit(self, train_loader: DataLoader, val_loader: Optional[DataLoader] = None, epochs: int = 5):
         """Train the model with optional validation."""
-        print(f'Training {self.__class__.__name__} on {self.device}')
-        train_losses, train_accs = [], []
-        val_losses, val_accs = [], []
+        tqdm.write(f'Training {self.__class__.__name__} on {self.device}')
+        logging.info(f'Training {self.__class__.__name__} on {self.device}')
+        train_losses, train_accs, train_neg_accs, train_pos_accs, train_nut_accs = [], [], [], [], []
+        val_losses, val_accs, val_neg_accs, val_pos_accs, val_nut_accs = [], [], [], [], []
 
         for epoch in range(epochs):
             # Training
             self.train()
-            train_loss, train_acc = self._run_epoch(train_loader, training=True)
+            train_loss, train_acc, train_neg_acc, train_nut_acc, train_pos_acc = self._run_epoch(train_loader, training=True)
             train_losses.append(train_loss)
             train_accs.append(train_acc)
+            train_neg_accs.append(train_neg_acc)
+            train_nut_accs.append(train_nut_acc)
+            train_pos_accs.append(train_pos_acc)
 
             # Validation
-            val_loss, val_acc = None, None
+            val_loss, val_acc, val_neg_acc, val_nut_acc, val_pos_acc = None, None, None, None, None
             if val_loader:
-                val_loss, val_acc = self.evaluate(val_loader)
+                val_loss, val_acc, val_neg_acc, val_nut_acc, val_pos_acc = self.evaluate(val_loader)
                 val_losses.append(val_loss)
                 val_accs.append(val_acc)
+                val_neg_accs.append(val_neg_acc)
+                val_nut_accs.append(val_nut_acc)
+                val_pos_accs.append(val_pos_acc)
 
             # Logging
-            print(f"Epoch {epoch + 1}/{epochs}: "
-                  f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.4f}" +
-                  (f" | Val Loss: {val_loss:.4f}, Acc: {val_acc:.4f}" if val_loss else ""))
+            s = (f"Epoch {epoch + 1}/{epochs}: \n" +
+                f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.4f} " +
+                f"Train Neg Acc: {train_neg_acc:.4f}, Nut Acc: {train_nut_acc:.4f}, Pos Acc: {train_pos_acc:.4f}" +
+                (f"\n Val Loss: {val_loss:.4f}, Acc: {val_acc:.4f} " if val_loss else "") +
+                (f"Val Neg Acc: {val_neg_acc:.4f}, Nut Acc: {val_nut_acc:.4f}, Pos Acc: {val_pos_acc:.4f}" if val_loss else ""))
+            tqdm.write(s)
+            logging.info(s)
 
         self.plot_metrics(train_losses, train_accs, val_losses, val_accs)
 
-    def _run_epoch(self, data_loader: DataLoader, training: bool = True) -> Tuple[float, float]:
+    def _run_epoch(self, data_loader: DataLoader, training: bool = True) -> Tuple[float, float, float, float, float]:
         """Run one epoch (training or evaluation)."""
         total_loss, total_correct, total_samples = 0.0, 0, 0
+        total_neg, total_neg_correct = 0,0
+        total_nut, total_nut_correct = 0, 0
+        total_pos, total_pos_correct = 0, 0
+        pbar = tqdm(data_loader, desc=f"{'Training' if training else 'Evaluating'}",
+                    unit='batch', leave=False)
 
-        for batch in data_loader:
+        for batch in pbar:
             x, y, kwargs = self._unpack_batch(batch)
             x, y = x.to(self.device), y.to(self.device)
 
             # Forward pass
             outputs = self(x, **kwargs)
             loss = self.criterion(outputs, y)
+            # print(outputs)
 
             # Backward pass (if training)
             if training:
@@ -96,15 +128,34 @@ class BaseModel(ABC, nn.Module):
             # Metrics
             preds = outputs.argmax(dim=1)
             adjusted_preds = self._adjust_predictions(preds)
+            # print(adjusted_preds)
+            # print(y)
+            total_neg_correct += ((adjusted_preds==y) & (y == -1)).sum().item()
+            total_neg += (adjusted_preds==-1).sum().item()
+            total_nut_correct += ((adjusted_preds == y) & (y == 0)).sum().item()
+            total_nut += (adjusted_preds == 0).sum().item()
+            total_pos_correct += ((adjusted_preds == y) & (y == 1)).sum().item()
+            total_pos += (adjusted_preds == 1).sum().item()
             total_correct += (adjusted_preds == y).sum().item()
             total_loss += loss.item() * y.size(0)
             total_samples += y.size(0)
+            pbar.set_postfix({
+                'samples': total_samples,
+                'loss': f"{total_loss / total_samples:.4f}",
+                'acc': f"{total_correct / total_samples:.4f}",
+                'neg': f"{total_neg_correct / total_neg if total_neg else -1:.4f}",
+                'nut': f"{total_nut_correct / total_nut if total_nut else -1:.4f}",
+                'pos': f"{total_pos_correct / total_pos if total_pos else -1:.4f}",
+            })
 
         avg_loss = total_loss / total_samples
         avg_acc = total_correct / total_samples
-        return avg_loss, avg_acc
+        avg_neg_acc = total_neg_correct / total_neg if total_neg else -1
+        avg_nut_acc = total_nut_correct / total_nut if total_nut else -1
+        avg_pos_acc = total_pos_correct / total_pos if total_pos else -1
+        return avg_loss, avg_acc, avg_neg_acc, avg_nut_acc, avg_pos_acc
 
-    def evaluate(self, data_loader: DataLoader) -> Tuple[float, float]:
+    def evaluate(self, data_loader: DataLoader) -> Tuple[float, float,float,float,float]:
         """Evaluate the model on a data loader."""
         self.eval()
         with torch.no_grad():
@@ -114,8 +165,9 @@ class BaseModel(ABC, nn.Module):
         """Generate predictions."""
         self.eval()
         all_preds = []
+        pbar = tqdm(data_loader, desc="Predicting",unit='batch', leave=False)
         with torch.no_grad():
-            for batch in data_loader:
+            for batch in pbar:
                 x, _, kwargs = self._unpack_batch(batch)
                 x = x.to(self.device)
                 outputs = self(x, **kwargs)
@@ -173,27 +225,31 @@ class BaseModel(ABC, nn.Module):
 
 # *********************** PYTORCH MODELS *****************************
 class CustomLoss(nn.Module):
-    def __init__(self, temperature: float = 0.5):
+    def __init__(self, temperature: float = 0.5, ce_weight = 0.25):
         super().__init__()
         self.temperature = temperature
+        self.ce_weight = ce_weight
 
     def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
         class_values = torch.tensor([-1.0, 0.0, 1.0], device=y_pred.device)
         y_pred_prob = torch.softmax(y_pred / self.temperature, dim=1)
-        y_pred_expected = (y_pred_prob * class_values).sum(dim=1)
-        mae = torch.abs(y_pred_expected - y_true.float()).mean()
-        loss = mae/2
+        errors = torch.abs(class_values.unsqueeze(0) - y_true.float().unsqueeze(1))
+        per_sample_error = (y_pred_prob * errors).sum(dim=1)
+        mae = per_sample_error.mean()
+        loss = mae/2.0
 
-        # ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) #CE loss for hybrid loss
-        ce_loss = 0
+        ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) * self.ce_weight #CE loss for hybrid loss
+        # ce_loss = 0
         return loss + ce_loss
 
 
 
 
 class BaseMLP(BaseModel):
-    def __init__(self, input_dim, output_dim=3, lr=0.001):
+    def __init__(self, input_dim, output_dim=3, lr=0.001, hidden_dim1 = 128, hidden_dim2 = 64):
         super().__init__(lr=lr)
+        self.hidden_dim1 = hidden_dim1
+        self.hidden_dim2 = hidden_dim2
         self._build_layers(input_dim, output_dim)
         self.optimizer = self._configure_optimizer()
         self.to(self.device)
@@ -211,19 +267,19 @@ class BaseMLP(BaseModel):
 class LinearMLP(BaseMLP):
     def _build_layers(self, input_dim, output_dim):
         self.layers = nn.Sequential(
-            nn.Linear(input_dim, 128),
-            nn.Linear(128, 64),
-            nn.Linear(64, output_dim)
+            nn.Linear(input_dim, self.hidden_dim1),
+            nn.Linear(self.hidden_dim1, self.hidden_dim2),
+            nn.Linear(self.hidden_dim2, output_dim)
         )
 
 class NonLinearMLP(BaseMLP):
     def _build_layers(self, input_dim, output_dim):
         self.layers = nn.Sequential(
-            nn.Linear(input_dim, 128),
+            nn.Linear(input_dim, self.hidden_dim1),
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Linear(self.hidden_dim1, self.hidden_dim2),
             nn.ReLU(),
-            nn.Linear(64, output_dim)
+            nn.Linear(self.hidden_dim2, output_dim)
         )
 
 class DropoutMLP(BaseMLP):
@@ -233,12 +289,12 @@ class DropoutMLP(BaseMLP):
 
     def _build_layers(self, input_dim, output_dim):
         self.layers = nn.Sequential(
-            nn.Linear(input_dim, 128),
+            nn.Linear(input_dim, self.hidden_dim1),
             nn.ReLU(),
             nn.Dropout(self.dropout_prob),
-            nn.Linear(128, 64),
+            nn.Linear(self.hidden_dim1, self.hidden_dim2),
             nn.ReLU(),
-            nn.Linear(64, output_dim)
+            nn.Linear(self.hidden_dim2, output_dim)
         )
     
 
@@ -266,3 +322,76 @@ class LSTMClassifier(BaseModel):
         _, (hidden, _) = self.lstm(x)
         return self.fc(hidden[-1])
 
+class BertPreTrainedClassifier(BaseModel):
+    is_variable_length = True
+    def __init__(self, model_name, input_dim: int = None, lr: float = 0.001, frozen = False, class_order = [2,0,1]):
+        super().__init__(lr=lr)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            num_labels=3,
+            ignore_mismatched_sizes=True
+        )
+        self.model.to(self.device)
+        self.optimizer = self._configure_optimizer()
+        self.to(self.device)
+        self.frozen = frozen
+        self.class_order = class_order
+
+        if frozen:
+            for param in self.model.bert.parameters():
+                param.requires_grad = False
+        # for name, param in self.model.named_parameters():
+        #     print(name, param.requires_grad)
+
+    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
+        """Forward pass with attention mask handling"""
+        attention_mask = kwargs.get('attention_mask', None)
+        # print(type(attention_mask))
+        # print(type(x))
+        # print(x.shape)
+        if self.frozen:
+            logits = self.model.classifier(x.float())
+        else:
+            logits = self.model(
+                input_ids=x,
+                attention_mask=attention_mask
+            ).logits
+        # print(res.shape)
+        # From tests, the new "neutral" head was the first location, then positive, then negative.
+        # so we need to reshape the output to be negative, neutral, positive, which is what happens below.
+        return logits[:, self.class_order]
+
+    def _configure_optimizer(self) -> torch.optim.Optimizer:
+        """AdamW optimizer with weight decay"""
+        return optim.AdamW(
+            self.parameters(),
+            lr=self.lr,
+            weight_decay=0.01
+        )
+
+    # def _configure_criterion(self) -> nn.Module:
+    #     """Cross entropy loss"""
+    #     return nn.CrossEntropyLoss()
+
+    def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, dict]:
+        """Unpack HF-formatted batch"""
+
+        if self.frozen: #If we've pre-computed the forward pass through the model, we just need to train the MLP
+            return (
+                batch[0],
+                batch[2],
+                {'attention_mask': None}
+            )
+        else: #If we're doing the full pass, and inputs are tokens with an attention mask
+            return (
+                batch[0][:, 0].long(),
+                batch[2],
+                {'attention_mask': batch[0][:, 1].long().to(self.device)}
+            )
+            # print(batch)
+
+    # def _adjust_predictions(self, predictions: torch.Tensor) -> torch.Tensor:
+    #     """No adjustment needed for 0/1/2 labels"""
+    #     predictions = torch.where(predictions == 2, torch.tensor(-1, device=predictions.device), predictions)
+    #     return predictions
