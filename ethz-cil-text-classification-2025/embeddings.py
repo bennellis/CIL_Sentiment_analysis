@@ -252,11 +252,11 @@ class BertTokenEmbedder(BaseEmbedding):
                 attention_mask = kwargs.get('attention_mask', None)
                 if attention_mask is not None: attention_mask = attention_mask.to(self.device)
 
-                outputs = self.model.bert(
+                outputs = self.model.distilbert( #.bert
                     input_ids=x,
                     attention_mask=attention_mask
                 )
-                logits = outputs.pooler_output  # shape (bsz, hidden_size)
+                logits = outputs.last_hidden_state[:, 0] #.pooler_output  # shape (bsz, hidden_size)
                 all_embs.append(logits.cpu())
                 all_labels.append(y.cpu())
 

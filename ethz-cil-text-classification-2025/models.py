@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from sklearn.linear_model import LogisticRegression
 from scipy.sparse import csr_matrix
-from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
+from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoConfig, TrainingArguments, Trainer
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -34,9 +34,11 @@ class BaseModel(ABC, nn.Module):
     """Abstract base class for all PyTorch models."""
     use_dataloader = True
 
-    def __init__(self, lr: float):
+    def __init__(self, lr: float, temperature:float = 0.5, ce_weight:float = 0.25):
         super().__init__()
         self.lr = lr
+        self.temperature = temperature
+        self.ce_weight = ce_weight
         self.criterion = self._configure_criterion()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
@@ -52,7 +54,7 @@ class BaseModel(ABC, nn.Module):
 
     def _configure_criterion(self) -> nn.Module:
         """Configure the loss function (override if needed)."""
-        return CustomLoss()
+        return CustomLoss(temperature = self.temperature, ce_weight = self.ce_weight)
 
     def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, Any]]:
         """Unpack a batch into inputs, targets, and extra arguments."""
@@ -238,7 +240,10 @@ class CustomLoss(nn.Module):
         mae = per_sample_error.mean()
         loss = mae/2.0
 
-        ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) * self.ce_weight #CE loss for hybrid loss
+        if(self.ce_weight == 0):
+            ce_loss = 0
+        else:
+            ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) * self.ce_weight #CE loss for hybrid loss
         # ce_loss = 0
         return loss + ce_loss
 
@@ -246,8 +251,8 @@ class CustomLoss(nn.Module):
 
 
 class BaseMLP(BaseModel):
-    def __init__(self, input_dim, output_dim=3, lr=0.001, hidden_dim1 = 128, hidden_dim2 = 64):
-        super().__init__(lr=lr)
+    def __init__(self, input_dim, output_dim=3, lr=0.001, hidden_dim1 = 128, hidden_dim2 = 64, temperature = 0.5, ce_weight = 0.25):
+        super().__init__(lr=lr,temperature = temperature, ce_weight = ce_weight)
         self.hidden_dim1 = hidden_dim1
         self.hidden_dim2 = hidden_dim2
         self._build_layers(input_dim, output_dim)
@@ -324,13 +329,17 @@ class LSTMClassifier(BaseModel):
 
 class BertPreTrainedClassifier(BaseModel):
     is_variable_length = True
-    def __init__(self, model_name, input_dim: int = None, lr: float = 0.001, frozen = False, class_order = [2,0,1]):
-        super().__init__(lr=lr)
+    def __init__(self, model_name, input_dim: int = None, lr: float = 0.001, frozen = False, class_order = [2,0,1], dropout=0.1, temperature = 0.5, ce_weight = 0.25):
+        super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight)
+        config = AutoConfig.from_pretrained(model_name)
+        config.hidden_dropout_prob = dropout  # default is 0.1
+        config.attention_probs_dropout_prob = dropout  # default is 0.1
+        config.num_labels = 3
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_name,
-            num_labels=3,
-            ignore_mismatched_sizes=True
+            ignore_mismatched_sizes=True,
+            config=config
         )
         self.model.to(self.device)
         self.optimizer = self._configure_optimizer()
