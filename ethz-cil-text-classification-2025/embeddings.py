@@ -1,16 +1,19 @@
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from transformers import BertTokenizer, BertModel
+from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import numpy as np
 from tqdm import tqdm
 from abc import ABC, abstractmethod
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Tuple
 import re
 from gensim.models import KeyedVectors
+from torch.utils.data import Dataset, DataLoader
+import custom_dataloader
 
 
 class BaseEmbedding(ABC):
     is_variable_length: bool
+    pre_compute: bool
     @abstractmethod
     def fit_transform(self, train_sentences: List[str]) -> np.ndarray:
         """
@@ -67,6 +70,7 @@ class BatchProcessor:
 
 class VectorizerEmbedding(BaseEmbedding):
     is_variable_length = False
+    pre_compute = False
 
     def __init__(self, vectorizer):
         self.vectorizer = vectorizer
@@ -96,11 +100,12 @@ class TFIDFEmbedding(VectorizerEmbedding):
         super().__init__(TfidfVectorizer(**kwargs))
     
 
-class Bert_base_uncased(BaseEmbedding):
+class BertPreTrained(BaseEmbedding):
     is_variable_length = False
-    def __init__(self):
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.model_embed = BertModel.from_pretrained('bert-base-uncased')
+    pre_compute = False
+    def __init__(self,model):
+        self.tokenizer = BertTokenizer.from_pretrained(model)
+        self.model_embed = BertModel.from_pretrained(model)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_embed = self.model_embed.to(self.device)
         self.batch_processor = BatchProcessor()
@@ -123,6 +128,7 @@ class Bert_base_uncased(BaseEmbedding):
 
         with torch.no_grad():
             outputs = self.model_embed(**inputs)
+        # print(outputs)
 
         # Mean pooling across tokens
         return outputs.last_hidden_state.mean(dim=1).cpu().numpy()
@@ -135,10 +141,146 @@ class Bert_base_uncased(BaseEmbedding):
             process_fn=self._process_single_batch
         )
 
+
+class BertPreTrainedClassifier(BaseEmbedding):
+    is_variable_length = False
+    pre_compute = False
+    def __init__(self,model):
+        pipe = pipeline("text-classification", model=model)
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.model_embed = AutoModelForSequenceClassification.from_pretrained(model, num_labels=3,ignore_mismatched_sizes=True)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model_embed = self.model_embed.to(self.device)
+        self.batch_processor = BatchProcessor()
+
+    def transform(self, sentences: List[str]):
+        return self.get_bert_embeddings_batch(list(sentences))
+
+    def fit_transform(self, train_sentences: List[str]):
+        return self.get_bert_embeddings_batch(list(train_sentences))
+
+    def _process_single_batch(self, batch):
+        """Process a single batch of texts into BERT embeddings"""
+        inputs = self.tokenizer(
+            batch,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=256 # was 512
+        ).to(self.device)
+
+        # training_args = TrainingArguments(...)  # Same as original
+        # trainer = Trainer(...)  # Same as original
+        # trainer.train()
+
+        with torch.no_grad():
+            outputs = self.model_embed(**inputs)
+        # print(outputs)
+
+        return outputs.logits.cpu().numpy()
+
+    def get_bert_embeddings_batch(self, texts, batch_size=16):
+        """Get embeddings for all texts using batch processing"""
+        return self.batch_processor.process_in_batches(
+            data=texts,
+            batch_size=batch_size,
+            process_fn=self._process_single_batch
+        )
+
+
+class BertTokenEmbedder(BaseEmbedding):
+    is_variable_length = True
+    pre_compute = True
+    def __init__(self,model):
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = self.model.to(self.device)
+        self.batch_processor = BatchProcessor()
+
+    def transform(self, sentences: List[str]):
+        return self.get_bert_embeddings_batch(list(sentences))
+
+    def fit_transform(self, train_sentences: List[str]):
+        return self.get_bert_embeddings_batch(list(train_sentences))
+
+    def _process_single_batch(self, batch):
+        """Process a single batch of texts into BERT embeddings"""
+        encoding = self.tokenizer(
+            batch,
+            return_tensors="pt",
+            padding='max_length',
+            truncation=True,
+            max_length=256 # was 512
+        ).to(self.device)
+        ar = np.array([encoding['input_ids'].cpu().numpy(),encoding['attention_mask'].cpu().numpy()])
+        return np.transpose(ar, (1, 0, 2))
+
+
+    def get_bert_embeddings_batch(self, texts, batch_size=32):
+        """Get embeddings for all texts using batch processing"""
+        return self.batch_processor.process_in_batches(
+            data=texts,
+            batch_size=batch_size,
+            process_fn=self._process_single_batch
+        )
+
+    def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, dict]:
+        """Unpack HF-formatted batch"""
+        return (
+            batch[0][:, 0].long(),
+            batch[2],
+            {'attention_mask': batch[0][:, 1].long().to(self.device)}
+        )
+
+    def precompute_embeddings(self, dataloader: DataLoader) -> DataLoader:
+        """
+        Runs every batch through BERT (in eval & no_grad mode),
+        collects `pooler_output` into a TensorDataset, and returns
+        a new DataLoader over (embeddings, labels).
+        """
+        self.model.eval()
+        all_embs, all_labels = [], []
+
+        pbar = tqdm(dataloader, desc=f"{'pre-computing'}",
+                    unit='batch', leave=False)
+
+        with torch.no_grad():
+            for batch in pbar:
+                x, y, kwargs = self._unpack_batch(batch)
+                x, y = x.to(self.device), y.to(self.device)
+                attention_mask = kwargs.get('attention_mask', None)
+                if attention_mask is not None: attention_mask = attention_mask.to(self.device)
+
+                outputs = self.model.distilbert( #.bert
+                    input_ids=x,
+                    attention_mask=attention_mask
+                )
+                logits = outputs.last_hidden_state[:, 0] #.pooler_output  # shape (bsz, hidden_size)
+                all_embs.append(logits.cpu())
+                all_labels.append(y.cpu())
+
+        embs = torch.cat(all_embs, dim=0).numpy()
+        # embs = embs[:,np.newaxis, :]
+        # print(embs.shape)
+        labs = torch.cat(all_labels, dim=0).numpy()
+        ds = custom_dataloader.EmbeddingDataset(embs, labs, variable_length=False)
+        train_sampler = custom_dataloader.DynamicUnderSampler(labs, random_state=42)
+
+        # reuse the same batch_size & shuffling as original
+        return DataLoader(
+            ds,
+            sampler=train_sampler,
+            batch_size=16,
+            collate_fn=custom_dataloader.collate_fn,
+        )
+    # return self._process_single_batch(texts)
+
 # ***************************** Variable Length Embeddings *************************
 
 class Word2VecEmbedding(BaseEmbedding):
     is_variable_length = True
+    pre_compute = False
     
     def __init__(self, model_path, binary=True):
         """
@@ -228,6 +370,7 @@ class Word2VecEmbedding(BaseEmbedding):
 
 class Word2VecEmbedding2(BaseEmbedding):
     is_variable_length = True
+    pre_compute = False
 
     def __init__(self,
                  model_path: str,
