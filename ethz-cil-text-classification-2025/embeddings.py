@@ -233,7 +233,7 @@ class BertTokenEmbedder(BaseEmbedding):
             {'attention_mask': batch[0][:, 1].long().to(self.device)}
         )
 
-    def precompute_embeddings(self, dataloader: DataLoader) -> DataLoader:
+    def precompute_embeddings(self, dataloader: DataLoader, val=False) -> DataLoader:
         """
         Runs every batch through BERT (in eval & no_grad mode),
         collects `pooler_output` into a TensorDataset, and returns
@@ -252,7 +252,13 @@ class BertTokenEmbedder(BaseEmbedding):
                 attention_mask = kwargs.get('attention_mask', None)
                 if attention_mask is not None: attention_mask = attention_mask.to(self.device)
 
-                outputs = self.model.distilbert( #.bert
+                # print(self.model)
+                for attr in ("bert", "distilbert", "model", "roberta"): #This is to set the tokenizer correctly for different model architectures.
+                    backbone = getattr(self.model, attr, None)
+                    if backbone is not None:
+                        break
+                # backbone = getattr(self.model, "bert", None) or getattr(self.model, "distilbert", None) or getattr(self.model, "model",None)
+                outputs = backbone( #.bert or distilbert
                     input_ids=x,
                     attention_mask=attention_mask
                 )
@@ -266,14 +272,22 @@ class BertTokenEmbedder(BaseEmbedding):
         labs = torch.cat(all_labels, dim=0).numpy()
         ds = custom_dataloader.EmbeddingDataset(embs, labs, variable_length=False)
         train_sampler = custom_dataloader.DynamicUnderSampler(labs, random_state=42)
-
         # reuse the same batch_size & shuffling as original
-        return DataLoader(
-            ds,
-            sampler=train_sampler,
-            batch_size=16,
-            collate_fn=custom_dataloader.collate_fn,
-        )
+
+        if val:
+            return DataLoader(
+                ds,
+                batch_size=16,
+                collate_fn=custom_dataloader.collate_fn,
+            )
+        else:
+
+            return DataLoader(
+                ds,
+                sampler=train_sampler,
+                batch_size=16,
+                collate_fn=custom_dataloader.collate_fn,
+            )
     # return self._process_single_batch(texts)
 
 # ***************************** Variable Length Embeddings *************************

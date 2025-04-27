@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from sklearn.linear_model import LogisticRegression
 from scipy.sparse import csr_matrix
-from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoConfig, TrainingArguments, Trainer
+from transformers import BertTokenizer, BertModel, pipeline, AutoTokenizer, AutoModelForSequenceClassification, \
+    AutoConfig, TrainingArguments, Trainer, AutoModel, get_linear_schedule_with_warmup
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -56,6 +57,13 @@ class BaseModel(ABC, nn.Module):
         """Configure the loss function (override if needed)."""
         return CustomLoss(temperature = self.temperature, ce_weight = self.ce_weight)
 
+    def _configure_scheduler(self, optimizer: optim.Optimizer, num_warmup_steps: int, num_training_steps: int):
+        return get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=num_warmup_steps,
+            num_training_steps=num_training_steps
+        )
+
     def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, Any]]:
         """Unpack a batch into inputs, targets, and extra arguments."""
         x, y = batch[0], batch[1]
@@ -71,6 +79,9 @@ class BaseModel(ABC, nn.Module):
         logging.info(f'Training {self.__class__.__name__} on {self.device}')
         train_losses, train_accs, train_neg_accs, train_pos_accs, train_nut_accs = [], [], [], [], []
         val_losses, val_accs, val_neg_accs, val_pos_accs, val_nut_accs = [], [], [], [], []
+        total_steps = epochs * len(train_loader)
+        warmup_steps = int(0.1 * total_steps)  # 10% warmup
+        self.scheduler = self._configure_scheduler(self.optimizer,warmup_steps,total_steps)
 
         for epoch in range(epochs):
             # Training
@@ -124,8 +135,10 @@ class BaseModel(ABC, nn.Module):
             # Backward pass (if training)
             if training:
                 self.optimizer.zero_grad()
+                torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
                 loss.backward()
                 self.optimizer.step()
+                self.scheduler.step()
 
             # Metrics
             preds = outputs.argmax(dim=1)
@@ -234,13 +247,19 @@ class CustomLoss(nn.Module):
 
     def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
         class_values = torch.tensor([-1.0, 0.0, 1.0], device=y_pred.device)
-        y_pred_prob = torch.softmax(y_pred / self.temperature, dim=1)
-        errors = torch.abs(class_values.unsqueeze(0) - y_true.float().unsqueeze(1))
+        y_pred_prob = torch.softmax(y_pred / self.temperature, dim=1) # predicted probabilites after softmax for each class
+        errors = torch.abs(class_values.unsqueeze(0) - y_true.float().unsqueeze(1)) # 2 if pos / neg mistake, 1 if nut mistake 0 if correct
+        # errors = torch.clamp(torch.abs(class_values.unsqueeze(0) - y_true.float().unsqueeze(1))*2.0 - 1.0, min=0.0) # 3 if pos / neg mistake, 1 if nut mistake 0 if correct
         per_sample_error = (y_pred_prob * errors).sum(dim=1)
         mae = per_sample_error.mean()
         loss = mae/2.0
 
-        if(self.ce_weight == 0):
+        if self.ce_weight < 1:
+            loss = (1.0 - self.ce_weight) * loss
+        elif self.ce_weight == 1:
+            loss = 0
+
+        if self.ce_weight == 0:
             ce_loss = 0
         else:
             ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) * self.ce_weight #CE loss for hybrid loss
@@ -329,18 +348,38 @@ class LSTMClassifier(BaseModel):
 
 class BertPreTrainedClassifier(BaseModel):
     is_variable_length = True
-    def __init__(self, model_name, input_dim: int = None, lr: float = 0.001, frozen = False, class_order = [2,0,1], dropout=0.1, temperature = 0.5, ce_weight = 0.25):
+    def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr: float = 0.00001,
+                 frozen = False, class_order = [2,0,1], dropout=0.1,
+                 temperature = 0.5, ce_weight = 0.25, custom_ll = False):
         super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight)
+        self.lr = lr
         config = AutoConfig.from_pretrained(model_name)
-        config.hidden_dropout_prob = dropout  # default is 0.1
-        config.attention_probs_dropout_prob = dropout  # default is 0.1
+        # config.hidden_dropout_prob = dropout  # default is 0.1
+        # config.attention_probs_dropout_prob = dropout  # default is 0.1
         config.num_labels = 3
+        self.custom_ll = custom_ll
+        self.pt_lr = pt_lr
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            model_name,
-            ignore_mismatched_sizes=True,
-            config=config
-        )
+        if self.custom_ll:
+            self.model = AutoModel.from_pretrained(
+                model_name,
+                ignore_mismatched_sizes=True,
+                config=config
+            )
+            self.classifier = nn.Sequential(
+                nn.Dropout(dropout),
+                nn.Linear(config.hidden_size, 512),  # BERT's hidden size -> 512
+                nn.GELU(),  # or nn.ReLU()
+                nn.Dropout(dropout),
+                nn.Linear(512, config.num_labels)
+            )
+            self.classifier.to(self.device)
+        else:
+            self.model = AutoModelForSequenceClassification.from_pretrained(
+                model_name,
+                ignore_mismatched_sizes=True,
+                config=config
+            )
         self.model.to(self.device)
         self.optimizer = self._configure_optimizer()
         self.to(self.device)
@@ -348,7 +387,7 @@ class BertPreTrainedClassifier(BaseModel):
         self.class_order = class_order
 
         if frozen:
-            for param in self.model.bert.parameters():
+            for param in self.model.parameters():
                 param.requires_grad = False
         # for name, param in self.model.named_parameters():
         #     print(name, param.requires_grad)
@@ -360,12 +399,24 @@ class BertPreTrainedClassifier(BaseModel):
         # print(type(x))
         # print(x.shape)
         if self.frozen:
-            logits = self.model.classifier(x.float())
+            if self.custom_ll:
+                logits = self.classifier(x.float())
+            else:
+                logits = self.model.classifier(x.float())
         else:
-            logits = self.model(
-                input_ids=x,
-                attention_mask=attention_mask
-            ).logits
+            if self.custom_ll:
+                outputs = self.model(
+                    input_ids=x,
+                    attention_mask=attention_mask
+                )
+                pooled_output = outputs.last_hidden_state[:, 0, :]
+                # pooled_output = torch.mean(outputs.last_hidden_state, dim=1)
+                logits = self.classifier(pooled_output)
+            else:
+                logits = self.model(
+                    input_ids=x,
+                    attention_mask=attention_mask
+                ).logits
         # print(res.shape)
         # From tests, the new "neutral" head was the first location, then positive, then negative.
         # so we need to reshape the output to be negative, neutral, positive, which is what happens below.
@@ -373,9 +424,31 @@ class BertPreTrainedClassifier(BaseModel):
 
     def _configure_optimizer(self) -> torch.optim.Optimizer:
         """AdamW optimizer with weight decay"""
+        # layers = self.model.transformer.layer #transformer or bert
+        for attr in ("encoder", "transformer", "layers"):  # This is to set the tokenizer correctly for different model architectures.
+            backbone = getattr(self.model, attr, None)
+            if backbone is not None:
+                if attr in ("encoder","transformer"):
+                    backbone = backbone.layer
+                break
+        # print(self.model)
+        # print(self.model.layers)
+        layers = backbone
+        num_layers = len(layers)
+        third = num_layers // 3
+
+        # Split into bottom, mid, top
+        bottom_layers = layers[:third]
+        mid_layers = layers[third:2 * third]
+        top_layers = layers[2 * third:]
         return optim.AdamW(
-            self.parameters(),
-            lr=self.lr,
+            [
+                {'params': self.classifier.parameters(), 'lr': self.lr},
+                # {'params': self.model.parameters(), 'lr': self.pt_lr},
+                {'params': bottom_layers.parameters(), 'lr': self.pt_lr * (1e-2)},  # Bottom layers
+                {'params': mid_layers.parameters(), 'lr': self.pt_lr * (1e-1)},  # Mid layers
+                {'params': top_layers.parameters(), 'lr': self.pt_lr},
+            ],
             weight_decay=0.01
         )
 
