@@ -2,7 +2,7 @@ import optuna
 from Objectives.TestObjective import objective
 # main.py
 from Hyperparameters.Models.ModelDummy import ModelDummy
-from Utils.GitUtils import get_model_file_path, is_file_dirty, get_git_info
+from Utils.GitUtils import get_class_file_path, is_file_dirty, get_git_info
 import subprocess
 import webbrowser
 import time

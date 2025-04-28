@@ -8,8 +8,8 @@ from Hyperparameters.Utils.Misc import get_device
 from Hyperparameters.Training.BasicTrainingLoop import train
 from Hyperparameters.Training.BasicValidationLoop import validate
 from Hyperparameters.Models.ModelDummy import ModelDummy
-from Hyperparameters.registry import MODEL_REGISTRY
 from Hyperparameters.Utils.GitUtils import log_model_git_info
+from Hyperparameters.registry import model_registry
 
 
 def get_mnist_dataloaders(batch_size=8):
@@ -49,9 +49,8 @@ def objective(trial):
 
         device = get_device(True)
 
-        # 🧠 Dynamically select model from registry
-        model_name = trial.suggest_categorical("model_name", list(MODEL_REGISTRY.keys()))
-        model_info = MODEL_REGISTRY[model_name]
+        model_name = trial.suggest_categorical("model_name", list(model_registry.registry.keys()))
+        model_info = model_registry.registry[model_name]
         log_model_git_info(model_name, model_info)
 
         model_class = model_info["class"]
@@ -61,6 +60,7 @@ def objective(trial):
         print(trial.params)
         model = model_class(**model_params)
         model.to(device)
+
         # Optimizer
         if optimizer_name == "Adam":
             optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -85,3 +85,4 @@ def objective(trial):
             scheduler.step()
 
     return best_val_loss
+

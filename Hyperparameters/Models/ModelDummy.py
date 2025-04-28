@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from Hyperparameters.registry import register_model
 
 
-@register_model("SimpleModel", enforce_clean=False)
+@register_model("SimpleModel")
 class ModelDummy(nn.Module):
     def __init__(self, dropout=0.0):
         super(ModelDummy, self).__init__()

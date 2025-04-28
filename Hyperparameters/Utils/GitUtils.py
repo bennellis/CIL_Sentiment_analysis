@@ -12,7 +12,7 @@ def get_git_output(command_list):
         return None
 
 
-def get_model_file_path(model_class):
+def get_class_file_path(model_class):
     return os.path.abspath(inspect.getfile(model_class))
 
 
@@ -47,8 +47,6 @@ def get_github_link(remote_url, file_path, commit_sha):
     relative_path = os.path.relpath(file_path, repo_root)
 
     return f"{remote_url}/blob/{commit_sha}/{relative_path}"
-
-
 def log_model_git_info(name, registry_info):
     git_info = registry_info.get("git_info")
     file_path = registry_info.get("file_path")
@@ -61,4 +59,19 @@ def log_model_git_info(name, registry_info):
     mlflow.set_tag("git_user", f"{git_info['user_name']} <{git_info['user_email']}>")
     mlflow.set_tag("git_branch", git_info["branch"])
     mlflow.set_tag("model_file_link", file_link)
+    mlflow.set_tag("dirty", was_dirty)
+
+
+def log_embedding_git_info(name, registry_info):
+    git_info = registry_info.get("git_info")
+    file_path = registry_info.get("file_path")
+    was_dirty = registry_info.get("dirty")
+
+    file_link = get_github_link(git_info["remote_url"], file_path, git_info["commit_sha"])
+    mlflow.set_tag("embedding_name", name)
+    mlflow.set_tag("embedding_file", file_path)
+    mlflow.set_tag("git_commit", git_info["commit_sha"])
+    mlflow.set_tag("git_user", f"{git_info['user_name']} <{git_info['user_email']}>")
+    mlflow.set_tag("git_branch", git_info["branch"])
+    mlflow.set_tag("embedding_file_link", file_link)
     mlflow.set_tag("dirty", was_dirty)
