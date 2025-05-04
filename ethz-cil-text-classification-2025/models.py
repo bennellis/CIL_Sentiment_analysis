@@ -256,7 +256,7 @@ class CustomLoss(nn.Module):
 
         if self.ce_weight < 1:
             loss = (1.0 - self.ce_weight) * loss
-        elif self.ce_weight == 1:
+        else:
             loss = 0
 
         if self.ce_weight == 0:
@@ -265,8 +265,6 @@ class CustomLoss(nn.Module):
             ce_loss = nn.CrossEntropyLoss()(y_pred, (y_true+1).long()) * self.ce_weight #CE loss for hybrid loss
         # ce_loss = 0
         return loss + ce_loss
-
-
 
 
 class BaseMLP(BaseModel):
@@ -284,8 +282,6 @@ class BaseMLP(BaseModel):
 
     def forward(self, x: np.ndarray, **kwargs) -> np.ndarray:
         return self.layers(x)
-
-
 
 
 class LinearMLP(BaseMLP):
@@ -348,7 +344,8 @@ class LSTMClassifier(BaseModel):
 
 class BertPreTrainedClassifier(BaseModel):
     is_variable_length = True
-    def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr: float = 0.00001,
+    def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr_top: float = 1e-5,
+                 pt_lr_mid: float = 1e-6, pt_lr_bot: float = 1e-7,
                  frozen = False, class_order = [2,0,1], dropout=0.1,
                  temperature = 0.5, ce_weight = 0.25, custom_ll = False):
         super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight)
@@ -358,7 +355,9 @@ class BertPreTrainedClassifier(BaseModel):
         # config.attention_probs_dropout_prob = dropout  # default is 0.1
         config.num_labels = 3
         self.custom_ll = custom_ll
-        self.pt_lr = pt_lr
+        self.pt_lr_top = pt_lr_top
+        self.pt_lr_mid = pt_lr_mid
+        self.pt_lr_bot = pt_lr_bot
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         if self.custom_ll:
             self.model = AutoModel.from_pretrained(
@@ -445,9 +444,9 @@ class BertPreTrainedClassifier(BaseModel):
             [
                 {'params': self.classifier.parameters(), 'lr': self.lr},
                 # {'params': self.model.parameters(), 'lr': self.pt_lr},
-                {'params': bottom_layers.parameters(), 'lr': self.pt_lr * (1e-2)},  # Bottom layers
-                {'params': mid_layers.parameters(), 'lr': self.pt_lr * (1e-1)},  # Mid layers
-                {'params': top_layers.parameters(), 'lr': self.pt_lr},
+                {'params': bottom_layers.parameters(), 'lr': self.pt_lr_bot},  # Bottom layers
+                {'params': mid_layers.parameters(), 'lr': self.pt_lr_mid},  # Mid layers
+                {'params': top_layers.parameters(), 'lr': self.pt_lr_top},  #Top Layers
             ],
             weight_decay=0.01
         )
