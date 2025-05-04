@@ -2,3 +2,7 @@
 *optuna_study.db
 mlruns
 data/MNIST/
+ethz-cil-text-classification-2025/GoogleNews-vectors-negative300.bin
+ethz-cil-text-classification-2025/models/*
+ethz-cil-text-classification-2025/configs/*
+ethz-cil-text-classification-2025/models_pretrained/*

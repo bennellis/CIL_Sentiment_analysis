@@ -1,0 +1,9 @@
+Training BertPreTrainedClassifier on cudaEpoch 1/4: 
+Train Loss: 0.3812, Acc: 0.6888 Train Neg Acc: 0.7197, Nut Acc: 0.6091, Pos Acc: 0.7697
+ Val Loss: 0.3646, Acc: 0.7009 Val Neg Acc: 0.5487, Nut Acc: 0.8390, Pos Acc: 0.6961Epoch 2/4: 
+Train Loss: 0.3035, Acc: 0.7631 Train Neg Acc: 0.7812, Nut Acc: 0.7032, Pos Acc: 0.8171
+ Val Loss: 0.3312, Acc: 0.7325 Val Neg Acc: 0.5982, Nut Acc: 0.7793, Pos Acc: 0.7913Epoch 3/4: 
+Train Loss: 0.2499, Acc: 0.8081 Train Neg Acc: 0.8308, Nut Acc: 0.7444, Pos Acc: 0.8603
+ Val Loss: 0.3541, Acc: 0.7266 Val Neg Acc: 0.5738, Nut Acc: 0.8166, Pos Acc: 0.7576Epoch 4/4: 
+Train Loss: 0.2086, Acc: 0.8423 Train Neg Acc: 0.8639, Nut Acc: 0.7823, Pos Acc: 0.8895
+ Val Loss: 0.3345, Acc: 0.7365 Val Neg Acc: 0.6486, Nut Acc: 0.8154, Pos Acc: 0.7008
