@@ -9,7 +9,7 @@ import re
 from gensim.models import KeyedVectors
 from torch.utils.data import Dataset, DataLoader
 import custom_dataloader
-
+import os
 
 class BaseEmbedding(ABC):
     is_variable_length: bool
@@ -289,6 +289,60 @@ class BertTokenEmbedder(BaseEmbedding):
                 collate_fn=custom_dataloader.collate_fn,
             )
     # return self._process_single_batch(texts)
+
+    def precompute_embeddings_token_level(self, dataloader: DataLoader, val=False) -> DataLoader:
+        """
+        Runs every batch through BERT (in eval & no_grad mode),
+        collects full token-level embeddings (last_hidden_state) for each input.
+        Returns a DataLoader over (sequence, label).
+        """
+        self.model.eval()
+        all_embs, all_labels = [], []
+
+        pbar = tqdm(dataloader, desc=f"{'Precomputing' if not val else 'Precomputing (val)'}", unit='batch',
+                    leave=False)
+
+        with torch.no_grad():
+            for batch in pbar:
+                x, y, kwargs = self._unpack_batch(batch)
+                x, y = x.to(self.device), y.to(self.device)
+                attention_mask = kwargs.get('attention_mask', None)
+                if attention_mask is not None:
+                    attention_mask = attention_mask.to(self.device)
+
+                # Get correct backbone
+                for attr in ("bert", "distilbert", "model", "roberta"):
+                    backbone = getattr(self.model, attr, None)
+                    if backbone is not None:
+                        break
+
+                outputs = backbone(
+                    input_ids=x,
+                    attention_mask=attention_mask
+                )
+                hidden_states = outputs.last_hidden_state  # shape: (batch, seq_len, hidden_dim)
+
+                for i in range(hidden_states.size(0)):
+                    all_embs.append(hidden_states[i].cpu().numpy())  # variable-length
+                    all_labels.append(y[i].cpu().item())
+
+        # Build Dataset
+        dataset = custom_dataloader.EmbeddingDataset(all_embs, all_labels, variable_length=True)
+
+        if val:
+            return DataLoader(
+                dataset,
+                batch_size=16,
+                collate_fn=custom_dataloader.collate_fn
+            )
+        else:
+            sampler = custom_dataloader.DynamicUnderSampler(all_labels, random_state=42)
+            return DataLoader(
+                dataset,
+                sampler=sampler,
+                batch_size=16,
+                collate_fn=custom_dataloader.collate_fn
+            )
 
 # ***************************** Variable Length Embeddings *************************
 

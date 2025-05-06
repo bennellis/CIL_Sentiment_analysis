@@ -477,3 +477,78 @@ class BertPreTrainedClassifier(BaseModel):
     #     """No adjustment needed for 0/1/2 labels"""
     #     predictions = torch.where(predictions == 2, torch.tensor(-1, device=predictions.device), predictions)
     #     return predictions
+
+class BiRNNClassifier(BaseModel):
+    is_variable_length = True
+
+    def __init__(self, input_dim: int, hidden_dim: int = 128, num_layers: int = 2,
+                 dropout: float = 0.2, lr: float = 0.001):
+        super().__init__(lr=lr)
+        self.rnn = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True,
+                           dropout=dropout if num_layers > 1 else 0, bidirectional=True)
+        self.fc = nn.Linear(hidden_dim * 2, 3)  # Multiply hidden size by 2 for bidirectional
+        self.optimizer = self._configure_optimizer()
+        self._init_weights()
+
+    def _init_weights(self):
+        for name, param in self.named_parameters():
+            if "weight" in name and param.dim() > 1:
+                nn.init.xavier_uniform_(param)
+
+    def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, Any]]:
+        x, lengths, y = batch
+        return x, y, {'lengths': lengths}
+
+    def forward(self, x: torch.Tensor, lengths: Optional[torch.Tensor] = None) -> torch.Tensor:
+        if lengths is not None:
+            x = nn.utils.rnn.pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)
+
+        output, hidden = self.rnn(x)  # hidden shape: (num_layers * num_directions, batch, hidden_dim)
+
+        if isinstance(output, nn.utils.rnn.PackedSequence):
+            output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True)
+
+        # Concatenate last hidden state from both directions
+        if isinstance(hidden, tuple):  # If LSTM
+            hidden = hidden[0]
+        last_forward = hidden[-2]
+        last_backward = hidden[-1]
+        final_hidden = torch.cat((last_forward, last_backward), dim=1)
+
+        return self.fc(final_hidden)
+
+
+class TextCNNClassifier(BaseModel):
+    is_variable_length = True
+
+    def __init__(self, input_dim: int, num_classes: int = 3,
+                 kernel_sizes: list = [3, 4, 5], num_filters: int = 100,
+                 dropout: float = 0.5, lr: float = 0.001):
+        super().__init__(lr=lr)
+        self.kernel_sizes = kernel_sizes
+        self.num_filters = num_filters
+        self.convs = nn.ModuleList([
+            nn.Conv2d(in_channels=1, out_channels=num_filters, kernel_size=(k, input_dim))
+            for k in kernel_sizes
+        ])
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(len(kernel_sizes) * num_filters, num_classes)
+        self.optimizer = self._configure_optimizer()
+        self._init_weights()
+
+    def _init_weights(self):
+        for name, param in self.named_parameters():
+            if "weight" in name and param.dim() > 1:
+                nn.init.xavier_uniform_(param)
+
+    def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, Any]]:
+        x, lengths, y = batch
+        return x, y, {}
+
+    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
+        x = x.unsqueeze(1)  # shape: (batch_size, 1, seq_len, input_dim)
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]  # [(B, num_filters, seq_len-k+1), ...]
+        x = [F.max_pool1d(feature_map, feature_map.size(2)).squeeze(2) for feature_map in x]  # [(B, num_filters), ...]
+        x = torch.cat(x, 1)  # shape: (B, num_filters * len(kernel_sizes))
+        x = self.dropout(x)
+        return self.fc(x)
