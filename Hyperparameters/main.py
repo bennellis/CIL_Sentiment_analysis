@@ -1,5 +1,5 @@
 import optuna
-from Objectives.TestObjective import objective
+from Objectives.BaseObjective import Objective
 # main.py
 from Hyperparameters.Models.ModelDummy import ModelDummy
 from Utils.GitUtils import get_class_file_path, is_file_dirty, get_git_info
@@ -28,7 +28,7 @@ def launch_dashboards():
     webbrowser.open(optuna_uri)
 
 
-STUDY_NAME = "sentiment-optim-study"
+STUDY_NAME = "sentiment-optim"
 
 def main():
     # Create the optuna study which shares the experiment name
@@ -42,7 +42,7 @@ def main():
     mlflow.set_experiment(STUDY_NAME)
 
     launch_dashboards()
-
+    objective = Objective()
     study.optimize(objective, n_trials=5)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
