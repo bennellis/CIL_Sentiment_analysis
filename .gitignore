@@ -56,3 +56,5 @@ ethz-cil-text-classification-2025/__pycache__/custom_dataloader.cpython-313.pyc
 ethz-cil-text-classification-2025/__pycache__/embeddings.cpython-313.pyc
 ethz-cil-text-classification-2025/__pycache__/models.cpython-313.pyc
 Hyperparameters/data/MNIST/raw/*
+
+*/__pycache__/*
