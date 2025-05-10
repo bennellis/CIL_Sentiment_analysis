@@ -58,3 +58,5 @@ ethz-cil-text-classification-2025/__pycache__/models.cpython-313.pyc
 Hyperparameters/data/MNIST/raw/*
 
 */__pycache__/*
+*.gz
+*.pyc
