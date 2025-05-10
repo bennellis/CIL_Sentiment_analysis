@@ -124,7 +124,7 @@ class Objective:
 
             # Evaluate
             Y_val = self.val_data[1]
-            Y_pred = model.predict(self.val_loader)
+            Y_pred = model.predict(self.val_loader_unfrozen)
             mae = mean_absolute_error(Y_val, Y_pred)
             score = 0.5 * (2 - mae)
 
