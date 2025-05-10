@@ -60,3 +60,4 @@ Hyperparameters/data/MNIST/raw/*
 */__pycache__/*
 *.gz
 *.pyc
+*.pt
