@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import optuna
 from Objectives.BaseObjective import Objective
 # main.py
@@ -43,7 +48,7 @@ def main():
 
     launch_dashboards()
     objective = Objective()
-    study.optimize(objective, n_trials=5)
+    study.optimize(objective, n_trials=1)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
     print("Study statistics: ")

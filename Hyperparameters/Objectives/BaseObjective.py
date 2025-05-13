@@ -20,7 +20,8 @@ from Hyperparameters.Utils.Misc import get_device
 
 
 class Objective:
-    def __init__(self, model_name="answerdotai/ModernBERT-base", csv_path="data/Sentiment/training.csv", seed=42):
+    def __init__(self, model_name="answerdotai/ModernBERT-base",
+                 csv_path="data/Sentiment/training.csv", seed=42):
         self.seed = seed
         self.model_name = model_name
 
@@ -119,7 +120,7 @@ class Objective:
             model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=6, log_mlflow=True)
 
             # Fine-tune transformer layers
-            model.unfreeze(keep_frozen=6)
+            model.unfreeze(keep_frozen=2)
             model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=2, log_mlflow=True)
 
             # Evaluate

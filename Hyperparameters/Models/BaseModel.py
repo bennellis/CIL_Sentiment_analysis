@@ -20,11 +20,13 @@ class BaseModel(ABC, nn.Module):
     """Abstract base class for all PyTorch models."""
     use_dataloader = True
 
-    def __init__(self, lr: float, temperature:float = 0.5, ce_weight:float = 0.25):
+    def __init__(self, lr: float, temperature:float = 0.5, ce_weight:float = 0.25, margin:float = 0.1, use_cdw:bool = False):
         super().__init__()
         self.lr = lr
         self.temperature = temperature
         self.ce_weight = ce_weight
+        self.margin = margin
+        self.use_cdw = use_cdw
         self.criterion = self._configure_criterion()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
@@ -40,7 +42,10 @@ class BaseModel(ABC, nn.Module):
 
     def _configure_criterion(self) -> nn.Module:
         """Configure the loss function (override if needed)."""
-        return CustomLoss(temperature = self.temperature, ce_weight = self.ce_weight)
+        return CustomLoss(temperature = self.temperature,
+                          ce_weight = self.ce_weight,
+                          margin = self.margin,
+                          use_cdw = self.use_cdw)
 
     def _configure_scheduler(self, optimizer: optim.Optimizer, num_warmup_steps: int, num_training_steps: int):
         return get_linear_schedule_with_warmup(
@@ -133,8 +138,8 @@ class BaseModel(ABC, nn.Module):
             # Backward pass (if training)
             if training:
                 self.optimizer.zero_grad()
-                torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
                 self.optimizer.step()
                 self.scheduler.step()
 

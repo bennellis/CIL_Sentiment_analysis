@@ -20,8 +20,9 @@ class BertPreTrainedClassifier(BaseModel):
     def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr_top: float = 1e-5,
                  pt_lr_mid: float = 1e-6, pt_lr_bot: float = 1e-7,
                  frozen = True, class_order = [0,1,2], dropout=0.1,
-                 temperature = 0.5, ce_weight = 0.25, custom_ll = True):
-        super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight)
+                 temperature = 0.5, ce_weight = 0.25, custom_ll = True,
+                 margin = 0.1, use_cdw = False):
+        super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight, margin = margin, use_cdw = use_cdw)
         self.lr = lr
         config = AutoConfig.from_pretrained(model_name)
         # config.hidden_dropout_prob = dropout  # default is 0.1
@@ -153,13 +154,15 @@ class BertPreTrainedClassifier(BaseModel):
         model_choices = ["answerdotai/ModernBERT-base"]
         param_defs ={
             # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
-            "lr": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
-            "pt_lr_top": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
-            "pt_lr_mid": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
-            "pt_lr_bot": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
+            "lr": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
+            "pt_lr_top": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
+            "pt_lr_mid": lambda t, n: t.suggest_float(n, 5e-6, 5e-5),
+            "pt_lr_bot": lambda t, n: t.suggest_float(n, 3e-6, 3e-5),
             "dropout": lambda t, n: t.suggest_float(n, 0.01, 0.5),
-            "temperature": lambda t, n: t.suggest_float(n, 0.5, 1.0),
+            "temperature": lambda t, n: t.suggest_float(n, 0.5, 2.0),
             "ce_weight": lambda t, n: t.suggest_float(n, 0.0, 0.7),
+            "margin": lambda t, n: t.suggest_float(n, 0.0, 0.5), # margin for cdw loss
+            "use_cdw": lambda t, n: True, # use new CDW loss instead (makes ce_weight obsolete)
         }
         return suggest_namespaced_params(trial, "BertPreTrainedClassifier", param_defs)
 
