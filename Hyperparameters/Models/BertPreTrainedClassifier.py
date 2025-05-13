@@ -164,6 +164,19 @@ class BertPreTrainedClassifier(BaseModel):
             "margin": lambda t, n: t.suggest_float(n, 0.0, 0.5), # margin for cdw loss
             "use_cdw": lambda t, n: True, # use new CDW loss instead (makes ce_weight obsolete)
         }
+
+        # param_defs = {
+        #     # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
+        #     "lr": lambda t, n: 2e-5,
+        #     "pt_lr_top": lambda t, n: 2e-5,
+        #     "pt_lr_mid": lambda t, n: 1e-5,
+        #     "pt_lr_bot": lambda t, n: 1e-5,
+        #     "dropout": lambda t, n: 0.4,
+        #     "temperature": lambda t, n: 0.5,
+        #     "ce_weight": lambda t, n: 0.1,
+        #     "margin": lambda t, n: 0,  # margin for cdw loss
+        #     "use_cdw": lambda t, n: True,  # use new CDW loss instead (makes ce_weight obsolete)
+        # }
         return suggest_namespaced_params(trial, "BertPreTrainedClassifier", param_defs)
 
     def _get_backbone_layers(self):
@@ -183,7 +196,7 @@ class BertPreTrainedClassifier(BaseModel):
             param.requires_grad = False
         self.frozen = True
 
-    def unfreeze(self, keep_frozen: int = 6):
+    def unfreeze(self, keep_frozen: int = 3):
         if not self.frozen:
             raise Exception("Model is already unfrozen")
 

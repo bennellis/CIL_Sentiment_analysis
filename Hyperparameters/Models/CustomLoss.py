@@ -17,14 +17,14 @@ class CustomLoss(nn.Module):
         ], device=self.device)
 
     def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
-        y_pred_prob = torch.softmax(y_pred / self.temperature,
+        y_pred_prob = torch.softmax( (y_pred+ self.margin) / self.temperature,
                                     dim=1)  # predicted probabilites after softmax for each class
         cdw_ce_loss = 0
         if self.use_cdw:
             distances = self.penalty_matrix[y_true+1]
-            prob_m = y_pred_prob + self.margin
+            prob_m = y_pred_prob
 
-            log_probs = torch.log(1 - torch.min(prob_m, torch.ones_like(prob_m)) + 1e-9)
+            log_probs = torch.log(torch.clamp(1 - prob_m, min=1e-9))
             weighted_log_probs = distances * log_probs
             cdw_ce_loss = -weighted_log_probs.sum(dim=1).mean()
             return cdw_ce_loss
