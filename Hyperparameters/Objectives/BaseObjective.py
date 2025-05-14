@@ -120,7 +120,7 @@ class Objective:
             model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=6, log_mlflow=True)
 
             # Fine-tune transformer layers
-            model.unfreeze(keep_frozen=2)
+            model.unfreeze(keep_frozen=0)
             model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=2, log_mlflow=True)
 
             # Evaluate

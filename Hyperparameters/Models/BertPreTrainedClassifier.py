@@ -167,13 +167,13 @@ class BertPreTrainedClassifier(BaseModel):
 
         # param_defs = {
         #     # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
-        #     "lr": lambda t, n: 2e-5,
-        #     "pt_lr_top": lambda t, n: 2e-5,
-        #     "pt_lr_mid": lambda t, n: 1e-5,
-        #     "pt_lr_bot": lambda t, n: 1e-5,
+        #     "lr": lambda t, n: 1e-5,
+        #     "pt_lr_top": lambda t, n: 1e-5,
+        #     "pt_lr_mid": lambda t, n: 5e-6,
+        #     "pt_lr_bot": lambda t, n: 1e-6,
         #     "dropout": lambda t, n: 0.4,
-        #     "temperature": lambda t, n: 0.5,
-        #     "ce_weight": lambda t, n: 0.1,
+        #     "temperature": lambda t, n: 1.0,
+        #     "ce_weight": lambda t, n: 0.2,
         #     "margin": lambda t, n: 0,  # margin for cdw loss
         #     "use_cdw": lambda t, n: True,  # use new CDW loss instead (makes ce_weight obsolete)
         # }

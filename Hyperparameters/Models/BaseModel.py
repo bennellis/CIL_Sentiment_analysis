@@ -139,7 +139,7 @@ class BaseModel(ABC, nn.Module):
             if training:
                 self.optimizer.zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=5.0)
                 self.optimizer.step()
                 self.scheduler.step()
 
