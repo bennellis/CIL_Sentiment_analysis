@@ -116,11 +116,11 @@ class Objective:
             model.to(get_device())
 
             # Train classifier head only
-            model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=6, log_mlflow=True)
+            model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=6, log_mlflow=True, plot_metrics=False)
 
             # Fine-tune transformer layers
-            model.unfreeze(keep_frozen=6)
-            model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=2, log_mlflow=True)
+            model.unfreeze(keep_frozen=3)
+            model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=4, log_mlflow=True, plot_metrics=False)
 
             # Evaluate
             Y_val = self.val_data[1]

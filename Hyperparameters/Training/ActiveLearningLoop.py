@@ -1,96 +1,110 @@
-
 import torch
 import numpy as np
 
 from torch.utils.data import DataLoader, Subset
 import torch.nn.functional as F
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, mean_absolute_error, confusion_matrix
+
+import torch
+from torch.utils.data import DataLoader, Subset, random_split, TensorDataset
+from sklearn.model_selection import train_test_split
+import numpy as np
+
+
 
 def active_learning_loop(
-    model,
-    device,
-    dataset,
-    initial_labeled_indices,
-    unlabeled_indices,
-    val_loader,
-    train_fn,
-    query_fn,
-    max_rounds=5,
-    query_batch_size=100,
-    train_epochs_per_round=3,
-    batch_size=32
+        model,
+        device,
+        dataset,
+        query_fn,
+        max_rounds=5,
+        query_batch_size=1000,
+        train_epochs_per_round=3,
+        initial_label_count=1000,
+        val_split=0.2,
+        batch_size=32
 ):
+    # Split into train/val datasets (by indices)
+    all_indices = list(range(len(dataset)))
+    train_indices, val_indices = train_test_split(all_indices, test_size=val_split)
+    val_subset = Subset(dataset, val_indices)
+    val_loader = DataLoader(val_subset, batch_size=batch_size)
+
+    # Split train_indices into initial labeled + pool
+    np.random.shuffle(train_indices)
+    initial_labeled_indices = train_indices[:initial_label_count]
+    unlabeled_indices = train_indices[initial_label_count:]
+
+    # Start loop
     labeled_indices = list(initial_labeled_indices)
     pool_indices = list(unlabeled_indices)
+    print(len(initial_labeled_indices), len(unlabeled_indices), len(labeled_indices))
+    for r in range(max_rounds):
+        print(f"\n🔁 Round {r + 1}/{max_rounds} — Labeled: {len(labeled_indices)}")
 
-    for round in range(max_rounds):
-        print(f"\n Round {round + 1}/{max_rounds} — Labeled: {len(labeled_indices)}")
+        train_subset = Subset(dataset, labeled_indices)
+        train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
 
-        # Prepare training loader
-        train_loader = DataLoader(Subset(dataset, labeled_indices), batch_size=batch_size, shuffle=True)
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+        model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics = False)
 
-        # Train
-        for epoch in range(train_epochs_per_round):
-            train_loss = train_fn(model, device, train_loader, optimizer, epoch)
 
-        # Evaluate
-        val_accuracy = evaluate(model, device, val_loader)
-        print(f"✅ Validation Accuracy: {val_accuracy:.4f}")
-
-        # Stop if no more data to sample
         if len(pool_indices) == 0:
+            print("🎉 No more unlabeled samples.")
             break
 
-        # Query new samples using the strategy
         new_indices = query_fn(model, device, dataset, pool_indices, n_select=query_batch_size)
-
-        # Update sets
         labeled_indices += new_indices
         pool_indices = list(set(pool_indices) - set(new_indices))
+
+    Y_val_pred = model.predict(val_loader)
+    Y_val = np.array([dataset[i]['label'].item() for i in val_indices])
+
+
+    mae_val = mean_absolute_error(Y_val, Y_val_pred)
+    L_score_val = 0.5 * (2 - mae_val)
+    print(f'Evaluation Score (validation set): {L_score_val:.05f}')
+
+    conf_matrix = confusion_matrix(Y_val, Y_val_pred, labels=[-1, 0, 1])
+    print(conf_matrix)
+
 
     return labeled_indices
 
 
-def evaluate(model, device, val_loader):
-    model.eval()
-    y_true, y_pred = [], []
-    with torch.no_grad():
-        for x, y in val_loader:
-            x, y = x.to(device), y.to(device)
-            output = model(x)
-            preds = output.argmax(dim=1)
-            y_true.extend(y.cpu().numpy())
-            y_pred.extend(preds.cpu().numpy())
-    return accuracy_score(y_true, y_pred)
 
-
-
+import torch
+import torch.nn.functional as F
+import numpy as np
+from torch.utils.data import DataLoader, Subset
 
 def entropy(probs):
+    """Compute entropy for a batch of probability distributions"""
     return -np.sum(probs * np.log(probs + 1e-10), axis=1)
 
 def query_entropy(model, device, dataset, unlabeled_indices, batch_size=128, n_select=100):
-    model.eval()
-    scores = []
-    selected_indices = []
-
-    unlabeled_loader = torch.utils.data.DataLoader(
-        torch.utils.data.Subset(dataset, unlabeled_indices), batch_size=batch_size
+    # Create dataloader for the unlabeled pool
+    unlabeled_loader = DataLoader(
+        Subset(dataset, unlabeled_indices),
+        batch_size=batch_size
     )
 
+    # Get logits using model's helper
+    model.eval()
     with torch.no_grad():
-        for i, (x, _) in enumerate(unlabeled_loader):
-            x = x.to(device)
-            logits = model(x)
-            probs = F.softmax(logits, dim=1).cpu().numpy()
-            batch_scores = entropy(probs)
+        logits = model.get_logits(unlabeled_loader)  # shape: [N, num_classes]
 
-            start_idx = i * batch_size
-            batch_indices = unlabeled_indices[start_idx:start_idx + len(x)]
-            scores.extend(zip(batch_indices, batch_scores))
+    # Convert logits to probabilities
+    probs = F.softmax(logits, dim=1).cpu().numpy()  # shape: [N, num_classes]
 
-    # Sort and select top-N
-    sorted_scores = sorted(scores, key=lambda x: -x[1])
-    selected_indices = [idx for idx, _ in sorted_scores[:n_select]]
-    return selected_indices
+    # Compute entropy for each sample
+    entropies = entropy(probs)  # shape: [N]
+
+    # Get the top-N highest entropy samples
+    sorted_indices = np.argsort(-entropies)  # descending
+    selected_relative_indices = sorted_indices[:n_select]
+
+    # Map relative indices back to dataset indices
+    selected_absolute_indices = [unlabeled_indices[i] for i in selected_relative_indices]
+
+    return selected_absolute_indices
+

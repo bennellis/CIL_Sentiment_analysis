@@ -26,4 +26,4 @@ class DynamicUnderSampler(Sampler):
     def __len__(self):
         # Return length of the minority class * number of classes
         unique, counts = np.unique(self.y, return_counts=True)
-        return counts.min()
+        return counts.min() * len(unique)

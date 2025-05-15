@@ -133,13 +133,24 @@ class BertPreTrainedClassifier(BaseModel):
 
     def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, dict]:
         """Unpack HF-formatted batch"""
-
         if self.frozen: #If we've pre-computed the forward pass through the model, we just need to train the MLP
-            return (
-                batch[0],
-                batch[2],
-                {'attention_mask': None}
-            )
+            if isinstance(batch, dict):
+                # Dictionary format (used before embedding)
+                embeddings = batch["embeddings"]
+                labels = batch["label"]
+                # You likely want to tokenize here or pass sentences up to another method
+                # But if they're already tokenized, return them directly
+                return (
+                    embeddings,
+                    labels,
+                    {"attention_mask": None}
+                )
+            else:
+                return (
+                    batch[0],
+                    batch[2],
+                    {'attention_mask': None}
+                )
         else: #If we're doing the full pass, and inputs are tokens with an attention mask
             return (
                 batch[0][:, 0].long(),

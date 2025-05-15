@@ -43,7 +43,7 @@ def main():
 
     launch_dashboards()
     objective = Objective()
-    study.optimize(objective, n_trials=5)
+    study.optimize(objective, n_trials=8)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
     print("Study statistics: ")
