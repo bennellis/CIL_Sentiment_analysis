@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+import mlflow
 from torch.utils.data import DataLoader, Subset
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, mean_absolute_error, confusion_matrix
@@ -22,7 +23,8 @@ def active_learning_loop(
         train_epochs_per_round=3,
         initial_label_count=1000,
         val_split=0.2,
-        batch_size=32
+        batch_size=32,
+        log_mlflow=False
 ):
     # Split into train/val datasets (by indices)
     all_indices = list(range(len(dataset)))
@@ -45,7 +47,7 @@ def active_learning_loop(
         train_subset = Subset(dataset, labeled_indices)
         train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
 
-        model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics = False)
+        model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics = False, log_mlflow = log_mlflow)
 
 
         if len(pool_indices) == 0:
@@ -67,8 +69,11 @@ def active_learning_loop(
     conf_matrix = confusion_matrix(Y_val, Y_val_pred, labels=[-1, 0, 1])
     print(conf_matrix)
 
+    if log_mlflow:
+        mlflow.log_metric('mae', mae_val)
+        mlflow.log_metric('L_score', L_score_val)
 
-    return labeled_indices
+    return L_score_val
 
 
 

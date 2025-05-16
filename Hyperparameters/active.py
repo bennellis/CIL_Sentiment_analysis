@@ -18,7 +18,7 @@ from Hyperparameters.Training.ActiveLearningLoop import query_entropy
 from Hyperparameters.Utils.Misc import get_device
 
 
-model_name="FacebookAI/roberta-base"
+model_name="FacebookAI/roberta-large"
 csv_path="data/Sentiment/training.csv"
 seed = 42
 
@@ -90,7 +90,7 @@ active_learning_loop(
         batch_size=32
 )
 
-model_path = "roberta_base_active"
+model_path = "roberta_large_active_loss"
 torch.save(model.state_dict(), "cache/" + model_path + ".pt")
 model.model.save_pretrained("cache/" + model_path + "pretrained")
 model.model.config.save_pretrained("cache/" + model_path + "_config")
