@@ -1,7 +1,7 @@
 ﻿
 from typing import List, Tuple
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from Hyperparameters.Dataloader.DynamicUnderSampler import DynamicUnderSampler
 from Hyperparameters.Dataloader.EmbeddingDataset import EmbeddingDataset
@@ -116,3 +116,38 @@ class BertTokenEmbedder(BaseEmbedding):
                 collate_fn=collate_fn,
             )
     # return self._process_single_batch(texts)
+
+    def embed_dataset(self, loader: DataLoader) -> EmbeddingDataset:
+        """
+        Takes a Dataset and returns an EmbeddingDataset with precomputed BERT embeddings.
+        """
+
+        self.model.eval()
+        all_embs, all_labels = [], []
+
+        pbar = tqdm(loader, desc="Embedding dataset", unit='batch', leave=False)
+
+        with torch.no_grad():
+            for batch in pbar:
+                x, y, kwargs = self._unpack_batch(batch)
+                x, y = x.to(self.device), y.to(self.device)
+                attention_mask = kwargs.get('attention_mask', None)
+                if attention_mask is not None:
+                    attention_mask = attention_mask.to(self.device)
+
+                for attr in ("bert", "distilbert", "model", "roberta"):
+                    backbone = getattr(self.model, attr, None)
+                    if backbone is not None:
+                        break
+
+                outputs = backbone(
+                    input_ids=x,
+                    attention_mask=attention_mask
+                )
+                embeddings = outputs.last_hidden_state[:, 0]
+                all_embs.append(embeddings.cpu())
+                all_labels.append(y.cpu())
+
+        embs = torch.cat(all_embs, dim=0).numpy()
+        labels = torch.cat(all_labels, dim=0).numpy()
+        return EmbeddingDataset(embs, labels, variable_length=False)

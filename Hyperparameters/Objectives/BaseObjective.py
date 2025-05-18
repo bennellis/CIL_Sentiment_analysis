@@ -20,8 +20,7 @@ from Hyperparameters.Utils.Misc import get_device
 
 
 class Objective:
-    def __init__(self, model_name = "FacebookAI/roberta-base",# "distilbert/distilbert-base-uncased",#"answerdotai/ModernBERT-base",
-                 csv_path="data/Sentiment/training.csv", seed=42):
+    def __init__(self, model_name="answerdotai/ModernBERT-base", csv_path="data/Sentiment/training.csv", seed=42):
         self.seed = seed
         self.model_name = model_name
 

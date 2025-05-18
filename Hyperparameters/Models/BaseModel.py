@@ -193,6 +193,18 @@ class BaseModel(ABC, nn.Module):
                 all_preds.append(preds.cpu())
         return self._adjust_predictions(torch.cat(all_preds))
 
+    def get_logits(self, data_loader: DataLoader) -> torch.Tensor:
+        self.eval()
+        all_logits = []
+        pbar = tqdm(data_loader, desc="Predicting",unit='batch', leave=False)
+        with torch.no_grad():
+            for batch in pbar:
+                x, _, kwargs = self._unpack_batch(batch)
+                x = x.to(self.device)
+                logits = self(x, **kwargs)
+                all_logits.append(logits.cpu())
+        return(torch.cat(all_logits))
+
     def plot_metrics(self, train_losses, train_accuracies, val_losses=None, val_accuracies=None):
         plt.figure(figsize=(12, 4))
         plt.subplot(1, 2, 1)
