@@ -20,7 +20,7 @@ from Hyperparameters.Utils.Misc import get_device
 
 
 class Objective:
-    def __init__(self, model_name="answerdotai/ModernBERT-base",
+    def __init__(self, model_name = "FacebookAI/roberta-base",# "distilbert/distilbert-base-uncased",#"answerdotai/ModernBERT-base",
                  csv_path="data/Sentiment/training.csv", seed=42):
         self.seed = seed
         self.model_name = model_name
@@ -121,7 +121,7 @@ class Objective:
 
             # Fine-tune transformer layers
             model.unfreeze(keep_frozen=0)
-            model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=2, log_mlflow=True)
+            model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=3, log_mlflow=True)
 
             # Evaluate
             Y_val = self.val_data[1]

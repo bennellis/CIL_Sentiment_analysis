@@ -152,31 +152,31 @@ class BertPreTrainedClassifier(BaseModel):
     @staticmethod
     def suggest_hyperparameters(trial):
         model_choices = ["answerdotai/ModernBERT-base"]
-        param_defs ={
-            # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
-            "lr": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
-            "pt_lr_top": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
-            "pt_lr_mid": lambda t, n: t.suggest_float(n, 5e-6, 5e-5),
-            "pt_lr_bot": lambda t, n: t.suggest_float(n, 3e-6, 3e-5),
-            "dropout": lambda t, n: t.suggest_float(n, 0.01, 0.5),
-            "temperature": lambda t, n: t.suggest_float(n, 0.5, 2.0),
-            "ce_weight": lambda t, n: t.suggest_float(n, 0.0, 0.7),
-            "margin": lambda t, n: t.suggest_float(n, 0.0, 0.5), # margin for cdw loss
-            "use_cdw": lambda t, n: True, # use new CDW loss instead (makes ce_weight obsolete)
-        }
-
-        # param_defs = {
+        # param_defs ={
         #     # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
-        #     "lr": lambda t, n: 1e-5,
-        #     "pt_lr_top": lambda t, n: 1e-5,
-        #     "pt_lr_mid": lambda t, n: 5e-6,
-        #     "pt_lr_bot": lambda t, n: 1e-6,
-        #     "dropout": lambda t, n: 0.4,
-        #     "temperature": lambda t, n: 1.0,
-        #     "ce_weight": lambda t, n: 0.2,
-        #     "margin": lambda t, n: 0,  # margin for cdw loss
-        #     "use_cdw": lambda t, n: True,  # use new CDW loss instead (makes ce_weight obsolete)
+        #     "lr": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
+        #     "pt_lr_top": lambda t, n: t.suggest_float(n, 1e-5, 1e-4),
+        #     "pt_lr_mid": lambda t, n: t.suggest_float(n, 5e-6, 5e-5),
+        #     "pt_lr_bot": lambda t, n: t.suggest_float(n, 3e-6, 3e-5),
+        #     "dropout": lambda t, n: t.suggest_float(n, 0.01, 0.5),
+        #     "temperature": lambda t, n: t.suggest_float(n, 0.5, 2.0),
+        #     "ce_weight": lambda t, n: t.suggest_float(n, 0.0, 0.7),
+        #     "margin": lambda t, n: t.suggest_float(n, 0.0, 0.5), # margin for cdw loss
+        #     "use_cdw": lambda t, n: True, # use new CDW loss instead (makes ce_weight obsolete)
         # }
+
+        param_defs = {
+            # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
+            "lr": lambda t, n: 1e-4,
+            "pt_lr_top": lambda t, n: 1e-5,
+            "pt_lr_mid": lambda t, n: 5e-6,
+            "pt_lr_bot": lambda t, n: 3e-6,
+            "dropout": lambda t, n: 0.4,
+            "temperature": lambda t, n: 1.0,
+            "ce_weight": lambda t, n: 0.2,
+            "margin": lambda t, n: 0,  # margin for cdw loss
+            "use_cdw": lambda t, n: True,  # use new CDW loss instead (makes ce_weight obsolete)
+        }
         return suggest_namespaced_params(trial, "BertPreTrainedClassifier", param_defs)
 
     def _get_backbone_layers(self):
