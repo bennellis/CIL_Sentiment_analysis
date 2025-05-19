@@ -16,9 +16,11 @@ import numpy as np
 def active_learning_loop(
         model,
         device,
-        dataset,
+        train_embed_dataset,
+        val_embed_dataset,
+        train_unfrozen_dataloader,
+        val_unfrozen_dataloader,
         query_fn,
-        base_dataset,
         max_rounds=5,
         query_batch_size=1000,
         train_epochs_per_round=3,
@@ -29,9 +31,9 @@ def active_learning_loop(
         fine_tune=True
 ):
     # Split into train/val datasets (by indices)
-    all_indices = list(range(len(dataset)))
-    train_indices, val_indices = train_test_split(all_indices, test_size=val_split)
-    val_subset = Subset(dataset, val_indices)
+    train_indices = list(range(len(train_embed_dataset)))
+    val_indices = list(range(len(val_embed_dataset)))
+    val_subset = val_embed_dataset
     val_loader = DataLoader(val_subset, batch_size=batch_size)
 
     # Split train_indices into initial labeled + pool
@@ -46,7 +48,7 @@ def active_learning_loop(
     for r in range(max_rounds):
         print(f"\n🔁 Round {r + 1}/{max_rounds} — Labeled: {len(labeled_indices)}")
 
-        train_subset = Subset(dataset, labeled_indices)
+        train_subset = Subset(train_embed_dataset, labeled_indices)
         train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
 
         model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics = False, log_mlflow = log_mlflow)
@@ -56,12 +58,12 @@ def active_learning_loop(
             print("🎉 No more unlabeled samples.")
             break
 
-        new_indices = query_fn(model, device, dataset, pool_indices, n_select=query_batch_size)
+        new_indices = query_fn(model, device, train_embed_dataset, pool_indices, n_select=query_batch_size)
         labeled_indices += new_indices
         pool_indices = list(set(pool_indices) - set(new_indices))
 
     Y_val_pred = model.predict(val_loader)
-    Y_val = np.array([dataset[i]['label'].item() for i in val_indices])
+    Y_val = np.array([val_embed_dataset[i]['label'].item() for i in val_indices])
 
 
     mae_val = mean_absolute_error(Y_val, Y_val_pred)
@@ -71,9 +73,25 @@ def active_learning_loop(
     conf_matrix = confusion_matrix(Y_val, Y_val_pred, labels=[-1, 0, 1])
     print(conf_matrix)
 
+
+    if fine_tune:
+        print(f'Fine tuning')
+        model.unfreeze(keep_frozen=0)
+        model.fit(train_unfrozen_dataloader, val_unfrozen_dataloader, epochs=3, log_mlflow=True)
+        Y_val_pred = model.predict(val_unfrozen_dataloader)
+        Y_val = np.array([val_embed_dataset[i]['label'].item() for i in val_indices])
+
+        mae_val = mean_absolute_error(Y_val, Y_val_pred)
+        L_score_val = 0.5 * (2 - mae_val)
+        print(f'Evaluation Score (validation set): {L_score_val:.05f}')
+
+        conf_matrix = confusion_matrix(Y_val, Y_val_pred, labels=[-1, 0, 1])
+        print(conf_matrix)
+
     if log_mlflow:
         mlflow.log_metric('mae', mae_val)
         mlflow.log_metric('L_score', L_score_val)
+
 
     return L_score_val
 
@@ -114,4 +132,3 @@ def query_entropy(model, device, dataset, unlabeled_indices, batch_size=128, n_s
     selected_absolute_indices = [unlabeled_indices[i] for i in selected_relative_indices]
 
     return selected_absolute_indices
-

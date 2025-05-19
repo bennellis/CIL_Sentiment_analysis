@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import optuna
-from Objectives.ActiveObjective import Objective
+from Objectives.BaseObjective import Objective
 # main.py
 from Hyperparameters.Models.ModelDummy import ModelDummy
 from Utils.GitUtils import get_class_file_path, is_file_dirty, get_git_info
@@ -33,7 +33,7 @@ def launch_dashboards():
     webbrowser.open(optuna_uri)
 
 
-STUDY_NAME = "active-learning-roberta-base"
+STUDY_NAME = "base-obj-distilbert-base"
 
 def main():
     # Create the optuna study which shares the experiment name

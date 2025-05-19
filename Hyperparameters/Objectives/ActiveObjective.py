@@ -21,7 +21,7 @@ from Hyperparameters.Utils.Misc import get_device
 
 
 class Objective:
-    def __init__(self, model_name="FacebookAI/roberta-large", csv_path="data/Sentiment/training.csv", seed=42):
+    def __init__(self, model_name="distilbert/distilbert-base-uncased", csv_path="data/Sentiment/training.csv", seed=42):
         self.seed = seed
         self.model_name = model_name
         self.csv_path = csv_path
@@ -39,11 +39,14 @@ class Objective:
             stratify=df['label_encoded'], test_size=0.1, random_state=self.seed
         )
         embedder = BertTokenEmbedder(self.model_name)
-        features = embedder.fit_transform(df['sentence'].to_list())
-        labels = df['label_encoded'].to_numpy()
+        # features = embedder.fit_transform(df['sentence'].to_list())
+        # labels = df['label_encoded'].to_numpy()
+
+        features = train_texts
+        labels = train_labels
 
         if embedder.is_variable_length:
-            feature_dataset = EmbeddingDataset(features, labels)
+            self.feature_dataset = EmbeddingDataset(features, labels)
 
             cache_name = self.model_name.replace("/", "_")
             cache_path = "cache/" + cache_name
@@ -52,7 +55,7 @@ class Objective:
             if os.path.exists(emb_dataset_path):
                 self.embedded_feature_dataset = torch.load(emb_dataset_path, weights_only=False)
             else:
-                feature_dataloader = DataLoader(feature_dataset, batch_size=8, collate_fn=collate_fn)
+                feature_dataloader = DataLoader(self.feature_dataset, batch_size=8, collate_fn=collate_fn)
                 self.embedded_feature_dataset = embedder.embed_dataset(feature_dataloader)
                 os.makedirs("cache", exist_ok=True)
                 torch.save(self.embedded_feature_dataset, emb_dataset_path)
@@ -74,6 +77,7 @@ class Objective:
                 get_device(),
                 self.embedded_feature_dataset,
                 query_entropy,
+                self.feature_dataset,
                 max_rounds=1000,
                 query_batch_size=1000,
                 train_epochs_per_round=3,

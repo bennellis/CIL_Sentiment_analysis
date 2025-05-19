@@ -24,6 +24,7 @@ class BertPreTrainedClassifier(BaseModel):
                  margin = 0.1, use_cdw = False):
         super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight, margin = margin, use_cdw = use_cdw)
         self.lr = lr
+        self.model_name = model_name
         config = AutoConfig.from_pretrained(model_name)
         # config.hidden_dropout_prob = dropout  # default is 0.1
         # config.attention_probs_dropout_prob = dropout  # default is 0.1
@@ -82,7 +83,11 @@ class BertPreTrainedClassifier(BaseModel):
                     input_ids=x,
                     attention_mask=attention_mask
                 )
-                pooled_output = outputs.last_hidden_state[:, 0, :]
+                if self.model_name in ['microsoft/deberta-v3-base', 'microsoft/deberta-v3-large']:
+                    masked_embeddings = outputs.last_hidden_state * attention_mask.unsqueeze(-1)
+                    pooled_output = masked_embeddings.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True)
+                else:
+                    pooled_output = outputs.last_hidden_state[:, 0, :]
                 # pooled_output = torch.mean(outputs.last_hidden_state, dim=1)
                 logits = self.classifier(pooled_output)
             else:

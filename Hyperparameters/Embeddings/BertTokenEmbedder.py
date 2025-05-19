@@ -19,6 +19,7 @@ class BertTokenEmbedder(BaseEmbedding):
     is_variable_length = True
     pre_compute = True
     def __init__(self,model):
+        self.model_name = model
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.model = AutoModelForSequenceClassification.from_pretrained(model)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -80,7 +81,7 @@ class BertTokenEmbedder(BaseEmbedding):
                 if attention_mask is not None: attention_mask = attention_mask.to(self.device)
 
                 # print(self.model)
-                for attr in ("bert", "distilbert", "model", "roberta"): #This is to set the tokenizer correctly for different model architectures.
+                for attr in ("bert", "distilbert", "model", "roberta", "deberta"): #This is to set the tokenizer correctly for different model architectures.
                     backbone = getattr(self.model, attr, None)
                     if backbone is not None:
                         break
@@ -89,7 +90,12 @@ class BertTokenEmbedder(BaseEmbedding):
                     input_ids=x,
                     attention_mask=attention_mask
                 )
-                logits = outputs.last_hidden_state[:, 0] #.pooler_output  # shape (bsz, hidden_size)
+                if self.model_name in ['microsoft/deberta-v3-base', 'microsoft/deberta-v3-large']:
+                    masked_embeddings = outputs.last_hidden_state * attention_mask.unsqueeze(-1)
+                    logits = masked_embeddings.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True)
+                else:
+                    logits = outputs.last_hidden_state[:, 0]
+                # logits = outputs.last_hidden_state[:, 0] #.pooler_output  # shape (bsz, hidden_size)
                 all_embs.append(logits.cpu())
                 all_labels.append(y.cpu())
 
@@ -134,8 +140,9 @@ class BertTokenEmbedder(BaseEmbedding):
                 attention_mask = kwargs.get('attention_mask', None)
                 if attention_mask is not None:
                     attention_mask = attention_mask.to(self.device)
+                # print(self.model)
 
-                for attr in ("bert", "distilbert", "model", "roberta"):
+                for attr in ("bert", "distilbert", "model", "roberta", "deberta"):
                     backbone = getattr(self.model, attr, None)
                     if backbone is not None:
                         break
@@ -144,7 +151,11 @@ class BertTokenEmbedder(BaseEmbedding):
                     input_ids=x,
                     attention_mask=attention_mask
                 )
-                embeddings = outputs.last_hidden_state[:, 0]
+                if self.model_name == 'microsoft/deberta-v3-base':
+                    embeddings = outputs.pooler_output
+                else:
+                    embeddings = outputs.last_hidden_state[:, 0]
+                # embeddings = outputs.last_hidden_state[:, 0]
                 all_embs.append(embeddings.cpu())
                 all_labels.append(y.cpu())
 
