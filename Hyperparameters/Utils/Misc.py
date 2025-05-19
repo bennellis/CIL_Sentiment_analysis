@@ -56,3 +56,12 @@ def suggest_namespaced_params(trial, model_name, param_defs):
         namespaced_name = f"{model_name}_{param_name}"
         params[param_name] = suggest_fn(trial, namespaced_name)
     return params
+
+
+def in_jupyter() -> bool:
+    try:
+        from IPython import get_ipython
+        shell = get_ipython().__class__.__name__
+        return shell == 'ZMQInteractiveShell'  # Jupyter or Colab
+    except (NameError, ImportError):
+        return False

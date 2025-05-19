@@ -1,9 +1,7 @@
-﻿
-from typing import Tuple, Optional, Dict, Any
+﻿from typing import Tuple, Optional, Dict, Any
 from abc import ABC, abstractmethod
 
 import mlflow
-from tqdm.auto import tqdm
 import logging
 import matplotlib.pyplot as plt
 
@@ -13,22 +11,46 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from transformers import get_linear_schedule_with_warmup
 
-from Hyperparameters.Models.CustomLoss import CustomLoss
+
+from Hyperparameters.Utils.Misc import in_jupyter, get_device
+from Hyperparameters.registry import get_criterion
+
+if in_jupyter():
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 
 class BaseModel(ABC, nn.Module):
     """Abstract base class for all PyTorch models."""
     use_dataloader = True
 
-    def __init__(self, lr: float, temperature:float = 0.5, ce_weight:float = 0.25):
+    def __init__(self,
+                 lr: float,
+                 criterion_name: str,
+                 **kwargs
+                 ):
         super().__init__()
+
         self.lr = lr
-        self.temperature = temperature
-        self.ce_weight = ce_weight
-        self.criterion = self._configure_criterion()
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.criterion_name = criterion_name
+        self.criterion = self._configure_criterion(**kwargs)
+        self.device = get_device()
         self.to(self.device)
 
+        self.pbar = None
+        self.optimizer = None
+
+    def _init_progress_bar(self, iterable, desc="Progress", **kwargs):
+        if self.pbar is not None:
+            self.pbar.close()
+
+        self.pbar = tqdm(iterable, desc=desc, **kwargs)
+        return self.pbar
+
+    def set_lr(self, lr):
+        self.lr = lr
+        self.optimizer = self._configure_optimizer()
     @abstractmethod
     def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         """Forward pass logic."""
@@ -38,9 +60,14 @@ class BaseModel(ABC, nn.Module):
         """Configure the optimizer (override in subclasses if needed)."""
         return optim.Adam(self.parameters(), lr=self.lr)
 
-    def _configure_criterion(self) -> nn.Module:
+    def _configure_criterion(self, **kwargs) -> nn.Module:
         """Configure the loss function (override if needed)."""
-        return CustomLoss(temperature = self.temperature, ce_weight = self.ce_weight)
+        criterion = get_criterion(self.criterion_name)(**kwargs)
+        return criterion
+
+    def set_criterion(self, criterion_name, **kwargs) -> None:
+        self.criterion_name = criterion_name
+        self.criterion = self._configure_criterion(**kwargs)
 
     def _configure_scheduler(self, optimizer: optim.Optimizer, num_warmup_steps: int, num_training_steps: int):
         return get_linear_schedule_with_warmup(
@@ -58,20 +85,24 @@ class BaseModel(ABC, nn.Module):
         """Convert model outputs to target labels (e.g., 0,1,2 → -1,0,1)."""
         return predictions - 1
 
-    def fit(self, train_loader: DataLoader, val_loader: Optional[DataLoader] = None, epochs: int = 5, log_mlflow: bool = False, plot_metrics: bool = True):
+
+
+    def fit(self, train_loader: DataLoader, val_loader: Optional[DataLoader] = None, epochs: int = 5,
+            log_mlflow: bool = False, plot_metrics: bool = True):
         """Train the model with optional validation."""
-        tqdm.write(f'Training {self.__class__.__name__} on {self.device}')
+        # tqdm.write(f'Training {self.__class__.__name__} on {self.device}')
         logging.info(f'Training {self.__class__.__name__} on {self.device}')
         train_losses, train_accs, train_neg_accs, train_pos_accs, train_nut_accs = [], [], [], [], []
         val_losses, val_accs, val_neg_accs, val_pos_accs, val_nut_accs = [], [], [], [], []
         total_steps = epochs * len(train_loader)
         warmup_steps = int(0.1 * total_steps)  # 10% warmup
-        self.scheduler = self._configure_scheduler(self.optimizer,warmup_steps,total_steps)
+        self.scheduler = self._configure_scheduler(self.optimizer, warmup_steps, total_steps)
 
         for epoch in range(epochs):
             # Training
             self.train()
-            train_loss, train_acc, train_neg_acc, train_nut_acc, train_pos_acc = self._run_epoch(train_loader, training=True)
+            train_loss, train_acc, train_neg_acc, train_nut_acc, train_pos_acc = self._run_epoch(train_loader,
+                                                                                                 training=True)
             train_losses.append(train_loss)
             train_accs.append(train_acc)
             train_neg_accs.append(train_neg_acc)
@@ -102,11 +133,12 @@ class BaseModel(ABC, nn.Module):
                     mlflow.log_metric('val_nut_acc', val_nut_acc)
             # Logging
             s = (f"Epoch {epoch + 1}/{epochs}: \n" +
-                f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.4f} " +
-                f"Train Neg Acc: {train_neg_acc:.4f}, Nut Acc: {train_nut_acc:.4f}, Pos Acc: {train_pos_acc:.4f}" +
-                (f"\n Val Loss: {val_loss:.4f}, Acc: {val_acc:.4f} " if val_loss else "") +
-                (f"Val Neg Acc: {val_neg_acc:.4f}, Nut Acc: {val_nut_acc:.4f}, Pos Acc: {val_pos_acc:.4f}" if val_loss else ""))
-            tqdm.write(s)
+                 f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.4f} " +
+                 f"Train Neg Acc: {train_neg_acc:.4f}, Nut Acc: {train_nut_acc:.4f}, Pos Acc: {train_pos_acc:.4f}" +
+                 (f"\n Val Loss: {val_loss:.4f}, Acc: {val_acc:.4f} " if val_loss else "") +
+                 (
+                     f"Val Neg Acc: {val_neg_acc:.4f}, Nut Acc: {val_nut_acc:.4f}, Pos Acc: {val_pos_acc:.4f}" if val_loss else ""))
+            # tqdm.write(s)
             logging.info(s)
 
         if plot_metrics:
@@ -115,11 +147,11 @@ class BaseModel(ABC, nn.Module):
     def _run_epoch(self, data_loader: DataLoader, training: bool = True) -> Tuple[float, float, float, float, float]:
         """Run one epoch (training or evaluation)."""
         total_loss, total_correct, total_samples = 0.0, 0, 0
-        total_neg, total_neg_correct = 0,0
+        total_neg, total_neg_correct = 0, 0
         total_nut, total_nut_correct = 0, 0
         total_pos, total_pos_correct = 0, 0
-        pbar = tqdm(data_loader, desc=f"{'Training' if training else 'Evaluating'}",
-                    unit='batch', leave=False)
+        pbar = self._init_progress_bar(data_loader, desc="Training" if training else "Evaluating", unit='batch',
+                                       leave=True)
 
         for batch in pbar:
             x, y, kwargs = self._unpack_batch(batch)
@@ -143,8 +175,8 @@ class BaseModel(ABC, nn.Module):
             adjusted_preds = self._adjust_predictions(preds)
             # print(adjusted_preds)
             # print(y)
-            total_neg_correct += ((adjusted_preds==y) & (y == -1)).sum().item()
-            total_neg += (adjusted_preds==-1).sum().item()
+            total_neg_correct += ((adjusted_preds == y) & (y == -1)).sum().item()
+            total_neg += (adjusted_preds == -1).sum().item()
             total_nut_correct += ((adjusted_preds == y) & (y == 0)).sum().item()
             total_nut += (adjusted_preds == 0).sum().item()
             total_pos_correct += ((adjusted_preds == y) & (y == 1)).sum().item()
@@ -168,7 +200,7 @@ class BaseModel(ABC, nn.Module):
         avg_pos_acc = total_pos_correct / total_pos if total_pos else -1
         return avg_loss, avg_acc, avg_neg_acc, avg_nut_acc, avg_pos_acc
 
-    def evaluate(self, data_loader: DataLoader) -> Tuple[float, float,float,float,float]:
+    def evaluate(self, data_loader: DataLoader) -> Tuple[float, float, float, float, float]:
         """Evaluate the model on a data loader."""
         self.eval()
         with torch.no_grad():
@@ -178,7 +210,7 @@ class BaseModel(ABC, nn.Module):
         """Generate predictions."""
         self.eval()
         all_preds = []
-        pbar = tqdm(data_loader, desc="Predicting",unit='batch', leave=False)
+        pbar = self._init_progress_bar(data_loader, desc="Predicting", unit='batch', leave=True)
         with torch.no_grad():
             for batch in pbar:
                 x, _, kwargs = self._unpack_batch(batch)
@@ -191,14 +223,14 @@ class BaseModel(ABC, nn.Module):
     def get_logits(self, data_loader: DataLoader) -> torch.Tensor:
         self.eval()
         all_logits = []
-        pbar = tqdm(data_loader, desc="Predicting",unit='batch', leave=False)
+        pbar = self._init_progress_bar(data_loader, desc="Getting Logits", unit='batch', leave=True)
         with torch.no_grad():
             for batch in pbar:
                 x, _, kwargs = self._unpack_batch(batch)
                 x = x.to(self.device)
                 logits = self(x, **kwargs)
                 all_logits.append(logits.cpu())
-        return(torch.cat(all_logits))
+        return (torch.cat(all_logits))
 
     def plot_metrics(self, train_losses, train_accuracies, val_losses=None, val_accuracies=None):
         plt.figure(figsize=(12, 4))

@@ -28,7 +28,7 @@ def launch_dashboards():
     webbrowser.open(optuna_uri)
 
 
-STUDY_NAME = "active-learning-roberta-base"
+STUDY_NAME = "test-active-learning-roberta-base"
 
 def main():
     # Create the optuna study which shares the experiment name
@@ -43,7 +43,7 @@ def main():
 
     launch_dashboards()
     objective = Objective()
-    study.optimize(objective, n_trials=20)
+    study.optimize(objective, n_trials=1)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
     print("Study statistics: ")

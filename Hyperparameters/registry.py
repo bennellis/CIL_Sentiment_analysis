@@ -15,6 +15,7 @@ from Hyperparameters.Utils.GitUtils import (
     get_github_link,
 )
 
+
 class Registry:
     def __init__(self, name, enforce_git_clean=True, verbose=False):
         self.name = name
@@ -22,7 +23,10 @@ class Registry:
         self.enforce_git_clean = enforce_git_clean
         self.verbose = verbose
 
-    def register(self, name, enforce_clean=None, verbose=None):
+    def get_class(self, name: str):
+        return self.registry[name]["class"]
+
+    def register(self, name: str, enforce_clean: bool = None, verbose: bool = None):
         enforce_clean = self.enforce_git_clean if enforce_clean is None else enforce_clean
         verbose = self.verbose if verbose is None else verbose
 
@@ -65,6 +69,7 @@ class Registry:
 
     def simple_register(self, name):
         """Simple registration without git checks (e.g., preprocessors)."""
+
         def decorator(cls):
             if name in self.registry:
                 print(f"⚠️ {self.name} '{name}' already registered, skipping duplicate.")
@@ -80,12 +85,14 @@ class Registry:
 # Instantiate registries
 model_registry = Registry("Model", enforce_git_clean=False, verbose=True)
 embedding_registry = Registry("Embedding", enforce_git_clean=False, verbose=True)
-
-
+criterion_registry = Registry("Loss", enforce_git_clean=False, verbose=True)
 
 # preprocessor_registry = Registry("Preprocessor", enforce_git_clean=False)  # Preprocessors don't require git checks
 
 
 register_model = model_registry.register
 register_embedding = embedding_registry.register
+register_criterion = criterion_registry.register
+
+get_criterion = criterion_registry.get_class
 # register_preprocessor = preprocessor_registry.simple_register

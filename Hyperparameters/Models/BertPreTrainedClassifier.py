@@ -1,5 +1,4 @@
-﻿
-from typing import Tuple
+﻿from typing import Tuple
 
 from Hyperparameters.Dataloader.EmbeddingDataset import EmbeddingDataset
 from Hyperparameters.Models.BaseMLP import BaseModel
@@ -13,16 +12,25 @@ from Hyperparameters.Utils.Misc import suggest_namespaced_params
 from torch.serialization import add_safe_globals
 
 
-
-
 class BertPreTrainedClassifier(BaseModel):
     is_variable_length = True
-    def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr_top: float = 1e-5,
-                 pt_lr_mid: float = 1e-6, pt_lr_bot: float = 1e-7,
-                 frozen = True, class_order = [0,1,2], dropout=0.1,
-                 temperature = 0.5, ce_weight = 0.25, custom_ll = True):
-        super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight)
-        self.lr = lr
+
+    def __init__(self,
+                 model_name: str,
+                 criterion_name: str,
+                 lr: float = 0.00001,
+                 pt_lr_top: float = 1e-5,
+                 pt_lr_mid: float = 1e-6,
+                 pt_lr_bot: float = 1e-7,
+                 class_order=[0, 1, 2],
+                 dropout=0.1,
+                 frozen=True,
+                 custom_ll=True,
+                 **kwargs
+                 ):
+
+        super().__init__(lr=lr, criterion_name=criterion_name, **kwargs)
+
         config = AutoConfig.from_pretrained(model_name)
         # config.hidden_dropout_prob = dropout  # default is 0.1
         # config.attention_probs_dropout_prob = dropout  # default is 0.1
@@ -97,10 +105,11 @@ class BertPreTrainedClassifier(BaseModel):
     def _configure_optimizer(self) -> torch.optim.Optimizer:
         """AdamW optimizer with weight decay"""
         # layers = self.model.transformer.layer #transformer or bert
-        for attr in ("encoder", "transformer", "layers"):  # This is to set the tokenizer correctly for different model architectures.
+        for attr in ("encoder", "transformer",
+                     "layers"):  # This is to set the tokenizer correctly for different model architectures.
             backbone = getattr(self.model, attr, None)
             if backbone is not None:
-                if attr in ("encoder","transformer"):
+                if attr in ("encoder", "transformer"):
                     backbone = backbone.layer
                 break
 
@@ -127,13 +136,9 @@ class BertPreTrainedClassifier(BaseModel):
             weight_decay=0.01
         )
 
-    # def _configure_criterion(self) -> nn.Module:
-    #     """Cross entropy loss"""
-    #     return nn.CrossEntropyLoss()
-
     def _unpack_batch(self, batch: Tuple) -> Tuple[torch.Tensor, torch.Tensor, dict]:
         """Unpack HF-formatted batch"""
-        if self.frozen: #If we've pre-computed the forward pass through the model, we just need to train the MLP
+        if self.frozen:  #If we've pre-computed the forward pass through the model, we just need to train the MLP
             if isinstance(batch, dict):
                 # Dictionary format (used before embedding)
                 embeddings = batch["embeddings"]
@@ -151,7 +156,7 @@ class BertPreTrainedClassifier(BaseModel):
                     batch[2],
                     {'attention_mask': None}
                 )
-        else: #If we're doing the full pass, and inputs are tokens with an attention mask
+        else:  #If we're doing the full pass, and inputs are tokens with an attention mask
             return (
                 batch[0][:, 0].long(),
                 batch[2],
@@ -161,18 +166,18 @@ class BertPreTrainedClassifier(BaseModel):
 
     @staticmethod
     def suggest_hyperparameters(trial):
-        model_choices = ["answerdotai/ModernBERT-base"]
-        param_defs ={
-            # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
+        model_param_defs = {
             "lr": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
+            "lr_unfrozen": lambda t, n: t.suggest_float(n, 1e-7, 1e-4),
             "pt_lr_top": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
             "pt_lr_mid": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
             "pt_lr_bot": lambda t, n: t.suggest_float(n, 1e-5, 1e-3),
-            "dropout": lambda t, n: t.suggest_float(n, 0.01, 0.5),
-            "temperature": lambda t, n: t.suggest_float(n, 0.5, 1.0),
-            "ce_weight": lambda t, n: t.suggest_float(n, 0.0, 0.7),
+            "dropout": lambda t, n: t.suggest_float(n, 0.01, 0.5)
         }
-        return suggest_namespaced_params(trial, "BertPreTrainedClassifier", param_defs)
+
+        model_params = suggest_namespaced_params(trial, "BertPreTrainedClassifier", model_param_defs)
+
+        return model_params
 
     def _get_backbone_layers(self):
         """Identify the stack of transformer layers in the model."""
@@ -181,7 +186,6 @@ class BertPreTrainedClassifier(BaseModel):
             if backbone is not None:
                 return backbone.layer if attr in ("encoder", "transformer") else backbone
         raise ValueError("Backbone layers not found in model")
-
 
     def freeze(self):
         if self.frozen:
@@ -202,7 +206,7 @@ class BertPreTrainedClassifier(BaseModel):
             for param in self.model.embeddings.parameters():
                 param.requires_grad = False
         # else:
-            # raise Exception("Model does not have embeddings attribute")
+        # raise Exception("Model does not have embeddings attribute")
 
         backbone = self._get_backbone_layers()
         for i in range(keep_frozen):
@@ -210,7 +214,6 @@ class BertPreTrainedClassifier(BaseModel):
                 param.requires_grad = False
 
         self.frozen = False
-
 
     # def _adjust_predictions(self, predictions: torch.Tensor) -> torch.Tensor:
     #     """No adjustment needed for 0/1/2 labels"""

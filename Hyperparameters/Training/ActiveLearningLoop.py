@@ -1,34 +1,35 @@
-import torch
-import numpy as np
+import math
 
+import torch
 import mlflow
-from torch.utils.data import DataLoader, Subset
-import torch.nn.functional as F
-from sklearn.metrics import accuracy_score, mean_absolute_error, confusion_matrix
-
-import torch
-from torch.utils.data import DataLoader, Subset, random_split, TensorDataset
+from sklearn.metrics import mean_absolute_error, confusion_matrix
 from sklearn.model_selection import train_test_split
-import numpy as np
 
+from Hyperparameters.Models.BaseModel import BaseModel
+from Hyperparameters.Utils.Misc import in_jupyter
+
+if in_jupyter():
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 
 def active_learning_loop(
-        model,
-        device,
-        dataset,
+        model: BaseModel,
+        device: torch.device,
+        dataset: torch.utils.data.Dataset,
+        train_indices,
+        val_indices,
         query_fn,
         max_rounds=5,
         query_batch_size=1000,
         train_epochs_per_round=3,
         initial_label_count=1000,
-        val_split=0.2,
         batch_size=32,
-        log_mlflow=False
+        log_mlflow=False,
+        plot_metrics=False,
 ):
     # Split into train/val datasets (by indices)
-    all_indices = list(range(len(dataset)))
-    train_indices, val_indices = train_test_split(all_indices, test_size=val_split)
     val_subset = Subset(dataset, val_indices)
     val_loader = DataLoader(val_subset, batch_size=batch_size)
 
@@ -40,18 +41,22 @@ def active_learning_loop(
     # Start loop
     labeled_indices = list(initial_labeled_indices)
     pool_indices = list(unlabeled_indices)
-    print(len(initial_labeled_indices), len(unlabeled_indices), len(labeled_indices))
-    for r in range(max_rounds):
-        print(f"\n🔁 Round {r + 1}/{max_rounds} — Labeled: {len(labeled_indices)}")
+    tqdm.write(f"{len(initial_labeled_indices)}, {len(unlabeled_indices)}, {len(labeled_indices)}")
+
+    max_possible_rounds = math.ceil(len(pool_indices) / query_batch_size)
+    actual_rounds = min(max_rounds, max_possible_rounds)
+
+    for r in range(actual_rounds):
+        tqdm.write(f"\n🔁 Round {r + 1}/{actual_rounds} — Labeled: {len(labeled_indices)}")
 
         train_subset = Subset(dataset, labeled_indices)
         train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
 
-        model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics = False, log_mlflow = log_mlflow)
-
+        model.fit(train_loader, val_loader, epochs=train_epochs_per_round, plot_metrics=plot_metrics,
+                  log_mlflow=log_mlflow)
 
         if len(pool_indices) == 0:
-            print("🎉 No more unlabeled samples.")
+            tqdm.write("🎉 No more unlabeled samples.")
             break
 
         new_indices = query_fn(model, device, dataset, pool_indices, n_select=query_batch_size)
@@ -61,13 +66,12 @@ def active_learning_loop(
     Y_val_pred = model.predict(val_loader)
     Y_val = np.array([dataset[i]['label'].item() for i in val_indices])
 
-
     mae_val = mean_absolute_error(Y_val, Y_val_pred)
     L_score_val = 0.5 * (2 - mae_val)
-    print(f'Evaluation Score (validation set): {L_score_val:.05f}')
+    tqdm.write(f'Evaluation Score (validation set): {L_score_val:.05f}')
 
     conf_matrix = confusion_matrix(Y_val, Y_val_pred, labels=[-1, 0, 1])
-    print(conf_matrix)
+    # tqdm.write(conf_matrix)
 
     if log_mlflow:
         mlflow.log_metric('mae', mae_val)
@@ -76,15 +80,16 @@ def active_learning_loop(
     return L_score_val
 
 
-
 import torch
 import torch.nn.functional as F
 import numpy as np
 from torch.utils.data import DataLoader, Subset
 
+
 def entropy(probs):
     """Compute entropy for a batch of probability distributions"""
     return -np.sum(probs * np.log(probs + 1e-10), axis=1)
+
 
 def query_entropy(model, device, dataset, unlabeled_indices, batch_size=128, n_select=100):
     # Create dataloader for the unlabeled pool
@@ -112,4 +117,3 @@ def query_entropy(model, device, dataset, unlabeled_indices, batch_size=128, n_s
     selected_absolute_indices = [unlabeled_indices[i] for i in selected_relative_indices]
 
     return selected_absolute_indices
-

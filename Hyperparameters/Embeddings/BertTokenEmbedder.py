@@ -25,11 +25,11 @@ class BertTokenEmbedder(BaseEmbedding):
         self.model = self.model.to(self.device)
         self.batch_processor = BatchProcessor()
 
-    def transform(self, sentences: List[str]):
-        return self.get_bert_embeddings_batch(list(sentences))
+    def transform(self, train_sentences: List[str], batch_size: int = 32):
+        return self.get_bert_embeddings_batch(list(train_sentences), batch_size=batch_size)
 
-    def fit_transform(self, train_sentences: List[str]):
-        return self.get_bert_embeddings_batch(list(train_sentences))
+    def fit_transform(self, train_sentences: List[str], batch_size: int = 32):
+        return self.get_bert_embeddings_batch(list(train_sentences), batch_size=batch_size)
 
     def _process_single_batch(self, batch):
         """Process a single batch of texts into BERT embeddings"""

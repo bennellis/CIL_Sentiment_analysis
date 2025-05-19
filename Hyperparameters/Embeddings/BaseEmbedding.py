@@ -20,12 +20,13 @@ class BaseEmbedding(ABC):
         pass
 
     @abstractmethod
-    def transform(self, sentences: List[str]) -> np.ndarray:
+    def transform(self, sentences: List[str], batch_size: int) -> np.ndarray:
         """
             Convert a list of sentences to embeddings
 
             Args:
                 sentences (list): List of sentences to convert to embeddings
+                batch_size (int): Batch size for embeddings
 
             Returns:
                 list[numpy.ndarray]: List of embeddings for each sentence
