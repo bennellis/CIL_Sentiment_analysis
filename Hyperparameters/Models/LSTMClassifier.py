@@ -1,5 +1,4 @@
-﻿
-from typing import Tuple, Optional, Dict, Any
+﻿from typing import Tuple, Optional, Dict, Any
 from Hyperparameters.Models.BaseMLP import BaseModel
 
 import torch

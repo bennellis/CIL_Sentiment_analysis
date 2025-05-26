@@ -3,6 +3,8 @@ from typing import Tuple
 
 from Hyperparameters.Dataloader.EmbeddingDataset import EmbeddingDataset
 from Hyperparameters.Models.BaseMLP import BaseModel
+from Hyperparameters.Models.BiRNNClassifier import BiRNNClassifier
+from Hyperparameters.Models.CNNClassifier import CNNClassifier
 
 from transformers import AutoTokenizer, AutoModel, AutoConfig, AutoModelForSequenceClassification
 import torch
@@ -21,9 +23,11 @@ class BertPreTrainedClassifier(BaseModel):
                  pt_lr_mid: float = 1e-6, pt_lr_bot: float = 1e-7,
                  frozen = True, class_order = [0,1,2], dropout=0.1,
                  temperature = 0.5, ce_weight = 0.25, custom_ll = True,
-                 margin = 0.1, use_cdw = False):
+                 margin = 0.1, use_cdw = False, head = 'mlp', mean_pool = False,):
         super().__init__(lr=lr, temperature=temperature, ce_weight=ce_weight, margin = margin, use_cdw = use_cdw)
         self.lr = lr
+        self.head = head
+        self.mean_pool = mean_pool
         self.model_name = model_name
         config = AutoConfig.from_pretrained(model_name)
         # config.hidden_dropout_prob = dropout  # default is 0.1
@@ -40,13 +44,28 @@ class BertPreTrainedClassifier(BaseModel):
                 ignore_mismatched_sizes=True,
                 config=config
             )
-            self.classifier = nn.Sequential(
-                nn.Dropout(dropout),
-                nn.Linear(config.hidden_size, 512),  # BERT's hidden size -> 512
-                nn.GELU(),  # or nn.ReLU()
-                nn.Dropout(dropout),
-                nn.Linear(512, config.num_labels)
-            )
+            if self.head == 'mlp':
+                self.classifier = nn.Sequential(
+                    nn.Dropout(dropout),
+                    nn.Linear(config.hidden_size, 512),  # BERT's hidden size -> 512
+                    nn.GELU(),  # or nn.ReLU()
+                    nn.Dropout(dropout),
+                    nn.Linear(512, config.num_labels)
+                )
+            elif self.head == 'rnn':
+                self.classifier = BiRNNClassifier(
+                    input_dim = config.hidden_size,
+                    dropout = dropout,
+                    lr = self.lr
+                )
+            elif self.head == 'cnn':
+                self.classifier = CNNClassifier(
+                    input_dim=config.hidden_size,
+                    dropout=dropout,
+                    lr=self.lr
+                )
+            else:
+                raise Exception(f'Unknown head {self.head}')
             self.classifier.to(self.device)
         else:
             self.model = AutoModelForSequenceClassification.from_pretrained(
@@ -72,9 +91,15 @@ class BertPreTrainedClassifier(BaseModel):
         # print(type(attention_mask))
         # print(type(x))
         # print(x.shape)
+        # print(self.frozen)
+        # print(self.head)
         if self.frozen:
             if self.custom_ll:
-                logits = self.classifier(x.float())
+                if self.head == 'mlp':
+                    logits = self.classifier(x.float())
+                elif self.head == 'rnn' or self.head == 'cnn':
+                    # print(x.shape)
+                    logits = self.classifier(x)
             else:
                 logits = self.model.classifier(x.float())
         else:
@@ -83,13 +108,19 @@ class BertPreTrainedClassifier(BaseModel):
                     input_ids=x,
                     attention_mask=attention_mask
                 )
-                if self.model_name in ['microsoft/deberta-v3-base', 'microsoft/deberta-v3-large']:
-                    masked_embeddings = outputs.last_hidden_state * attention_mask.unsqueeze(-1)
-                    pooled_output = masked_embeddings.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True)
+                if self.head == 'mlp':
+                    if self.model_name in ['microsoft/deberta-v3-base', 'microsoft/deberta-v3-large'] or self.mean_pool:
+                        masked_embeddings = outputs.last_hidden_state * attention_mask.unsqueeze(-1)
+                        pooled_output = masked_embeddings.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True)
+                    else:
+                        pooled_output = outputs.last_hidden_state[:, 0, :]
+                    # pooled_output = torch.mean(outputs.last_hidden_state, dim=1)
+                    logits = self.classifier(pooled_output)
+                elif self.head == 'rnn' or self.head == 'cnn':
+                    hidden_states = outputs.last_hidden_state
+                    logits = self.classifier(hidden_states)
                 else:
-                    pooled_output = outputs.last_hidden_state[:, 0, :]
-                # pooled_output = torch.mean(outputs.last_hidden_state, dim=1)
-                logits = self.classifier(pooled_output)
+                    raise Exception(f'Unknown head {self.head}')
             else:
                 logits = self.model(
                     input_ids=x,

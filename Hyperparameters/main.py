@@ -32,10 +32,11 @@ def launch_dashboards():
     webbrowser.open(mlflow_uri)
     webbrowser.open(optuna_uri)
 
+# MODEL_NAME = 'distilbert/distilbert-base-uncased'
+STUDY_NAME = "baseline_testing"
+HEAD_LIST = ['mlp','rnn','cnn']
 
-STUDY_NAME = "base-obj-distilbert-base"
-
-def main():
+def main(pre_process_name = 'NONE', model_name = 'distilbert/distilbert-base-uncased'):
     # Create the optuna study which shares the experiment name
     study = optuna.create_study(
         study_name=STUDY_NAME,
@@ -45,9 +46,22 @@ def main():
     )
 
     mlflow.set_experiment(STUDY_NAME)
+    balance_train_dataloader=False
+    balance_val_dataloader=False
+    use_frozen = False
+    pre_process = False
+    test_model = False
+    use_augmented_data = True
+    head=HEAD_LIST[0]
+    mean_pool = False
+
+    
 
     launch_dashboards()
-    objective = Objective()
+    objective = Objective(model_name=model_name, balance_train_dataloader=balance_train_dataloader,
+                          balance_val_dataloader=balance_val_dataloader, head=head, use_frozen = use_frozen,
+                          test_model = test_model, pre_process = pre_process, pre_process_name = pre_process_name,
+                          use_augmented_data = use_augmented_data, mean_pool = mean_pool)
     study.optimize(objective, n_trials=1)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
@@ -66,4 +80,25 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    pp_list = ['lemmatize',
+            'remove_numbers',
+            'NONE']
+    # pp_list = ['NONE']
+
+    # model_list = [
+    #     'google-bert/bert-base-uncased',
+    #     'FacebookAI/roberta-base',
+    #     'microsoft/deberta-v3-base',
+    #     'answerdotai/ModernBERT-base',
+    # ]
+    # model_list = ['distilbert/distilbert-base-uncased',]
+    # model_list = ['microsoft/deberta-v3-base']
+    model_list = [
+        'FacebookAI/roberta-large',
+        'microsoft/deberta-v3-large',
+        'answerdotai/ModernBERT-large',
+    ]
+
+    for model in model_list:
+        main(model_name = model)

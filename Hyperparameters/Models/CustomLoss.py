@@ -20,11 +20,18 @@ class CustomLoss(nn.Module):
         y_pred_prob = torch.softmax( (y_pred+ self.margin) / self.temperature,
                                     dim=1)  # predicted probabilites after softmax for each class
         cdw_ce_loss = 0
+
         if self.use_cdw:
             distances = self.penalty_matrix[y_true+1]
             prob_m = y_pred_prob
 
             log_probs = torch.log(torch.clamp(1 - prob_m, min=1e-9))
+            # print("penalty_matrix shape:", self.penalty_matrix.shape)
+            # print("y_true shape:", y_true.shape)
+            # print("distances shape:", distances.shape)
+            # print("log_probs shape:", log_probs.shape)
+            # print("prob_m shape", prob_m.shape)
+            # print("y_pred shape", y_pred.shape)
             weighted_log_probs = distances * log_probs
             cdw_ce_loss = -weighted_log_probs.sum(dim=1).mean()
             return cdw_ce_loss
