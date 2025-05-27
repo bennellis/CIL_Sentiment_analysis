@@ -222,7 +222,7 @@ class Objective:
             model.to(get_device())
 
             frozen_epochs = 0
-            unfrozen_epochs = 4
+            unfrozen_epochs = 3
             validations_per_epoch = 10
             keep_frozen_layers = 0
             early_save = True

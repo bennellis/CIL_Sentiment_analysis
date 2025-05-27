@@ -79,7 +79,7 @@ def main(do_test:bool = False, do_validate:bool = True):
                    ]
 
     model_vscores = np.array([0.855, 0.875, 0.864, 0.882, 0.902, 0.889, 0.904])
-    # model_vscores = model_vscores[[4, 6]]
+    # model_vscores = model_vscores[[4, 6]] # This is if you are only running a subset of models
     max_score = max(model_vscores)
     model_weights = [(vscore - 0.8) / (max_score - 0.8) for vscore in model_vscores]
     t_weights = torch.tensor(model_weights).view(-1, 1, 1)
@@ -97,7 +97,7 @@ def main(do_test:bool = False, do_validate:bool = True):
     hard_predictions = []
     test_hard_predictions = []
     final_Y_val =  None
-    for i in [4,6]:#range(len(model_names)):
+    for i in range(len(model_names)):
         model = BertPreTrainedClassifier(model_name=model_names[i],frozen=False,
                                                      **(params[i]), head = heads[i])
         print("Loading model from {}".format(model_paths[i]))
@@ -186,8 +186,18 @@ def main(do_test:bool = False, do_validate:bool = True):
         print(f"Validation Confusion Matrix:\n{conf_matrix}")
 
         print("hard voting:")
-        hard_preds_tensor = torch.stack(hard_predictions)
-        final_predictions_hard, _ = torch.mode(hard_preds_tensor, dim=0)
+        hard_preds_tensor = torch.stack(hard_predictions).T
+        final_predictions_hard = []
+        for preds in hard_preds_tensor:
+            counts = torch.bincount(preds + 1, minlength=3)  # Shift by +1 to make -1 be at index 0
+            top_count = torch.max(counts)
+            top_classes = (counts == top_count).nonzero(as_tuple=True)[0]
+
+            if len(top_classes) > 1:
+                final_predictions_hard.append(0)
+            else:
+                final_predictions_hard.append(int(top_classes[0]) - 1)  # Shift back by -1
+        final_predictions_hard = torch.tensor(final_predictions_hard)
 
         mae_hard = mean_absolute_error(final_Y_val, final_predictions_hard)
         score = 0.5 * (2 - mae_hard)
@@ -196,6 +206,18 @@ def main(do_test:bool = False, do_validate:bool = True):
 
         conf_matrix = confusion_matrix(final_Y_val, final_predictions_hard, labels=[-1, 0, 1])
         print(f"Validation Confusion Matrix (hard voting):\n{conf_matrix}")
+
+        # print("hard voting:")
+        # hard_preds_tensor = torch.stack(hard_predictions)
+        # final_predictions_hard, _ = torch.mode(hard_preds_tensor, dim=0)
+        #
+        # mae_hard = mean_absolute_error(final_Y_val, final_predictions_hard)
+        # score = 0.5 * (2 - mae_hard)
+        # print(f"ensemble (hard voting):")
+        # print(f"score: {score}")
+        #
+        # conf_matrix = confusion_matrix(final_Y_val, final_predictions_hard, labels=[-1, 0, 1])
+        # print(f"Validation Confusion Matrix (hard voting):\n{conf_matrix}")
 
     if do_test:
         stacked_test_outputs = torch.stack(test_predictions)
@@ -216,13 +238,34 @@ def main(do_test:bool = False, do_validate:bool = True):
         print("Test weighted predictions saved to 'test_predictions_weighted.csv'")
 
         print("hard voting on test predictions:")
-        test_hard_preds_tensor = torch.stack(test_hard_predictions)
-        final_test_predictions_hard, _ = torch.mode(test_hard_preds_tensor, dim=0)
 
+        test_hard_preds_tensor = torch.stack(test_hard_predictions).T
+        final_test_predictions_hard = []
+        for preds in test_hard_preds_tensor:
+            counts = torch.bincount(preds + 1, minlength=3)  # Shift to make -1 => 0, 0 => 1, 1 => 2
+            top_count = torch.max(counts)
+            top_classes = (counts == top_count).nonzero(as_tuple=True)[0]
+
+            if len(top_classes) > 1:
+                final_test_predictions_hard.append(0)
+            else:
+                final_test_predictions_hard.append(int(top_classes[0]) - 1)  # Shift back
+
+        final_test_predictions_hard = torch.tensor(final_test_predictions_hard)
         y_labels_hard = pd.Series(final_test_predictions_hard).map({-1: 'negative', 0: 'neutral', 1: 'positive'})
         submission_hard = pd.DataFrame({'id': test_data.index, 'label': y_labels_hard})
         submission_hard.to_csv('test_predictions_hard.csv', index=False)
+
         print("Test hard predictions saved to 'test_predictions_hard.csv'")
+
+        # print("hard voting on test predictions:")
+        # test_hard_preds_tensor = torch.stack(test_hard_predictions)
+        # final_test_predictions_hard, _ = torch.mode(test_hard_preds_tensor, dim=0)
+        #
+        # y_labels_hard = pd.Series(final_test_predictions_hard).map({-1: 'negative', 0: 'neutral', 1: 'positive'})
+        # submission_hard = pd.DataFrame({'id': test_data.index, 'label': y_labels_hard})
+        # submission_hard.to_csv('test_predictions_hard.csv', index=False)
+        # print("Test hard predictions saved to 'test_predictions_hard.csv'")
 
 if __name__ == "__main__":
     main(do_test=True, do_validate = False)

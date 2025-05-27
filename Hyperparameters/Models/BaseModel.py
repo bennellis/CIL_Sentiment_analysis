@@ -220,7 +220,7 @@ class BaseModel(ABC, nn.Module):
                 full_p = dir + model_path + "best_loss.pt"
                 torch.save(self.state_dict(), full_p)
                 print(f"{val_loss} < {self.best_loss}, Saved model weights with best loss to {full_p}")
-                self.best_score = val_loss
+                self.best_loss = val_loss
 
         s = ((f"\nVal Loss: {val_loss:.4f}, Acc: {val_acc:.4f}, mae: {mae:.4f}, Lscore: {1-mae*0.5:.4f}, " if val_loss else "") +
             (f"Val Neg Acc: {val_neg_acc:.4f}, Nut Acc: {val_nut_acc:.4f}, Pos Acc: {val_pos_acc:.4f}" if val_loss else ""))
