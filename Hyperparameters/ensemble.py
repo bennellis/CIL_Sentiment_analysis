@@ -71,13 +71,15 @@ def main(do_test:bool = False, do_validate:bool = True):
 
     d_params = {"lr": 1e-4,"pt_lr_top": 1e-5,"pt_lr_mid": 5e-6,"pt_lr_bot": 3e-6,"dropout": 0.4,
                 "temperature": 1.0,"ce_weight": 0.2,"margin": 0,"use_cdw": True}
-    params = [d_params,d_params,d_params,d_params,d_params,d_params]
+    params = [d_params,d_params,d_params,d_params,d_params,d_params, d_params]
     model_names = ['distilbert/distilbert-base-uncased', 'FacebookAI/roberta-base',
                    'google-bert/bert-base-uncased','FacebookAI/roberta-base',
                    'microsoft/deberta-v3-base','answerdotai/ModernBERT-base',
+                   'microsoft/deberta-v3-base',
                    ]
 
-    model_vscores = np.array([0.855, 0.875, 0.864, 0.882, 0.902, 0.889])
+    model_vscores = np.array([0.855, 0.875, 0.864, 0.882, 0.902, 0.889, 0.904])
+    # model_vscores = model_vscores[[4, 6]]
     max_score = max(model_vscores)
     model_weights = [(vscore - 0.8) / (max_score - 0.8) for vscore in model_vscores]
     t_weights = torch.tensor(model_weights).view(-1, 1, 1)
@@ -86,15 +88,16 @@ def main(do_test:bool = False, do_validate:bool = True):
                    'saved_weights/google-bert/bert-base-uncased/baseline_1.pt',
                    'saved_weights/FacebookAI/roberta-base/baseline_1.pt',
                    'saved_weights/microsoft/deberta-v3-base/baseline_1.pt',
-                   'saved_weights/answerdotai/ModernBERT-base/baseline_1.pt']
-    heads = ['mlp','mlp','mlp','mlp','mlp','mlp']
+                   'saved_weights/answerdotai/ModernBERT-base/baseline_1.pt',
+                   'saved_weights/microsoft/deberta-v3-base/baseline_cnn_plus_augmented.pt',]
+    heads = ['mlp','mlp','mlp','mlp','mlp','mlp','cnn']
 
     predictions = []
     test_predictions = []
     hard_predictions = []
     test_hard_predictions = []
     final_Y_val =  None
-    for i in range(len(model_names)):
+    for i in [4,6]:#range(len(model_names)):
         model = BertPreTrainedClassifier(model_name=model_names[i],frozen=False,
                                                      **(params[i]), head = heads[i])
         print("Loading model from {}".format(model_paths[i]))
@@ -145,7 +148,7 @@ def main(do_test:bool = False, do_validate:bool = True):
             y_labels_unweighted = pd.Series(y_test_am).map(
                 {-1: 'negative', 0: 'neutral', 1: 'positive'})
             submission_unweighted = pd.DataFrame({'id': test_data.index, 'label': y_labels_unweighted})
-            csv_path = model_paths[i][:-2] + ".csv"
+            csv_path = model_paths[i][:-2] + "csv"
             submission_unweighted.to_csv(csv_path, index=False)  # Update filename and path as needed
             print(f"Test predictions saved to '{csv_path}'")
 
@@ -222,5 +225,5 @@ def main(do_test:bool = False, do_validate:bool = True):
         print("Test hard predictions saved to 'test_predictions_hard.csv'")
 
 if __name__ == "__main__":
-    main(do_test=True, do_validate = True)
+    main(do_test=True, do_validate = False)
 

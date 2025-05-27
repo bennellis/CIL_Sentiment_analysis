@@ -34,6 +34,7 @@ class BaseModel(ABC, nn.Module):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
         self.best_score = 0
+        self.best_loss = 100
 
     @abstractmethod
     def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
@@ -205,14 +206,21 @@ class BaseModel(ABC, nn.Module):
         val_loss, val_acc, mae, val_neg_acc, val_nut_acc, val_pos_acc = self.evaluate(data_loader)
         if log_mlflow:
             self.log_to_mlflow(False,val_loss, val_acc, mae, val_neg_acc, val_nut_acc, val_pos_acc, steps)
-        if early_save and 1-mae*0.5 > self.best_score:
+
+        if early_save:
             model_path = "baseline_plus_augmented"
             dir = "saved_weights/" + self.model_name + "/"
             os.makedirs(dir, exist_ok=True)
-            full_p = dir + model_path + ".pt"
-            torch.save(self.state_dict(), full_p)
-            print(f"{1-mae*0.5} > {self.best_score}, Saved model weights to {full_p}")
-            self.best_score = 1 - mae * 0.5
+            if 1-mae*0.5 > self.best_score:
+                full_p = dir + model_path + ".pt"
+                torch.save(self.state_dict(), full_p)
+                print(f"{1-mae*0.5} > {self.best_score}, Saved model weights with best score to {full_p}")
+                self.best_score = 1 - mae * 0.5
+            if val_loss < self.best_loss:
+                full_p = dir + model_path + "best_loss.pt"
+                torch.save(self.state_dict(), full_p)
+                print(f"{val_loss} < {self.best_loss}, Saved model weights with best loss to {full_p}")
+                self.best_score = val_loss
 
         s = ((f"\nVal Loss: {val_loss:.4f}, Acc: {val_acc:.4f}, mae: {mae:.4f}, Lscore: {1-mae*0.5:.4f}, " if val_loss else "") +
             (f"Val Neg Acc: {val_neg_acc:.4f}, Nut Acc: {val_nut_acc:.4f}, Pos Acc: {val_pos_acc:.4f}" if val_loss else ""))
