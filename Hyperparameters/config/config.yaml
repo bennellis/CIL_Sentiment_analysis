@@ -1,0 +1,35 @@
+seed: 42
+study_name: 'baseline_testing'
+dataloader:
+  balance_train: false # balance the class distribution over the train dataset
+  balance_val: false # balance the class distribution over the validation dataset
+  use_frozen: true # use this to do a "warmup" with the encoder frozen
+  pre_process: false # use this to pre-process the data in defined way
+  pre_process_name: 'NONE' # use this to define which pre-processing option to use.
+  use_augmented_data: false # use the augmented back translated data
+model:
+  name: 'distilbert/distilbert-base-uncased' # encoder model to use from hugging face
+  test_model: false #use this to test model and save csv after run
+  head: 'mlp' # use this to define the classification head
+  mean_pool: false # use this to mean pool the hidden state of encoder, rather than just taking first '[CLS]' output
+  lr: 1e-4 #learning rate for classification head
+  pt_lr_top: 1e-5 # learning rate for top third layers of encoder backbone
+  pt_lr_mid: 5e-6 # learning rate for mid third layers of encoder backbone
+  pt_lr_bot: 3e-6 # learning rate for bottom third layers of encoder backbone
+  dropout: 0.4 # dropout for classification head
+  temperature: 1.0 # temperature for softmax in loss function
+  ce_weight: 0.2 # weighting cross entropy loss between MAE loss and CE loss (when not using CDW loss function)
+  margin: 0  # margin for cdw loss (add to logits pre-softmax for label smoothing)
+  use_cdw: True # use CDW-CE loss funciton instead of the hybrid MAE / CE loss function
+data:
+  csv_path: 'data/Sentiment/training.csv' #location of training .csv file
+training:
+  frozen_epochs: 1 # how many epochs to run while encoder is frozen
+  unfrozen_epochs: 2 # how many epochs to fine tune encoder unfrozen
+  validations_per_epoch: 10 # how many validation runs per training epoch
+  keep_frozen_layers: 0 # how many layers of encoder to unfreeze
+  early_save: true # do early stopping
+  early_save_path: 'baseline_2' # filepath for weights to be saved to for early stopping
+
+
+

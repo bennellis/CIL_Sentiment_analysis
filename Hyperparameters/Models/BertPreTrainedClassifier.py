@@ -10,6 +10,7 @@ from transformers import AutoTokenizer, AutoModel, AutoConfig, AutoModelForSeque
 import torch
 import torch.optim as optim
 import torch.nn as nn
+import yaml
 
 from Hyperparameters.Utils.Misc import suggest_namespaced_params
 from torch.serialization import add_safe_globals
@@ -18,6 +19,8 @@ from torch.serialization import add_safe_globals
 
 
 class BertPreTrainedClassifier(BaseModel):
+    """This class is used to initialize a bert-like encoder, with a classification head of the choices between
+    the classic single linear layer, an MLP, an RNN, or a CNN."""
     is_variable_length = True
     def __init__(self, model_name, input_dim: int = None, lr: float = 0.00001, pt_lr_top: float = 1e-5,
                  pt_lr_mid: float = 1e-6, pt_lr_bot: float = 1e-7,
@@ -88,11 +91,6 @@ class BertPreTrainedClassifier(BaseModel):
     def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         """Forward pass with attention mask handling"""
         attention_mask = kwargs.get('attention_mask', None)
-        # print(type(attention_mask))
-        # print(type(x))
-        # print(x.shape)
-        # print(self.frozen)
-        # print(self.head)
         if self.frozen:
             if self.custom_ll:
                 if self.head == 'mlp':
@@ -198,6 +196,9 @@ class BertPreTrainedClassifier(BaseModel):
 
     @staticmethod
     def suggest_hyperparameters(trial):
+        """This file is used to suggest parameters for optuna. Right now we are just providing static parameters,
+        as we already performed graph search with optuna to tune our choices. to use the optuna suggestions, just
+        uncomment the code below and remove the static references."""
         model_choices = ["answerdotai/ModernBERT-base"]
         # param_defs ={
         #     # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
@@ -212,17 +213,20 @@ class BertPreTrainedClassifier(BaseModel):
         #     "use_cdw": lambda t, n: True, # use new CDW loss instead (makes ce_weight obsolete)
         # }
 
+        with open("config/config.yaml", "r") as file:
+            config = yaml.safe_load(file)
+
         param_defs = {
             # "model_name": lambda t, n: t.suggest_categorical(n, model_choices),
-            "lr": lambda t, n: 1e-4,
-            "pt_lr_top": lambda t, n: 1e-5,
-            "pt_lr_mid": lambda t, n: 5e-6,
-            "pt_lr_bot": lambda t, n: 3e-6,
-            "dropout": lambda t, n: 0.4,
-            "temperature": lambda t, n: 1.0,
-            "ce_weight": lambda t, n: 0.2,
-            "margin": lambda t, n: 0,  # margin for cdw loss
-            "use_cdw": lambda t, n: True,  # use new CDW loss instead (makes ce_weight obsolete)
+            "lr": lambda t, n: config['model']['lr'],
+            "pt_lr_top": lambda t, n: config['model']['pt_lr_top'],
+            "pt_lr_mid": lambda t, n: config['model']['pt_lr_mid'],
+            "pt_lr_bot": lambda t, n: config['model']['pt_lr_bot'],
+            "dropout": lambda t, n: config['model']['dropout'],
+            "temperature": lambda t, n: config['model']['temperature'],
+            "ce_weight": lambda t, n: config['model']['ce_weight'],
+            "margin": lambda t, n: config['model']['margin'],  # margin for cdw loss
+            "use_cdw": lambda t, n: config['model']['use_cdw'],  # use new CDW loss instead (makes ce_weight obsolete)
         }
         return suggest_namespaced_params(trial, "BertPreTrainedClassifier", param_defs)
 
@@ -236,6 +240,7 @@ class BertPreTrainedClassifier(BaseModel):
 
 
     def freeze(self):
+        """This function freezes the encoder layer to allow for training of just the classification head"""
         if self.frozen:
             raise Exception("Model is already frozen")
 
@@ -244,6 +249,7 @@ class BertPreTrainedClassifier(BaseModel):
         self.frozen = True
 
     def unfreeze(self, keep_frozen: int = 3):
+        """This function unfreezes the encoder to allow for fine-tuning of it"""
         if not self.frozen:
             raise Exception("Model is already unfrozen")
 
@@ -253,8 +259,6 @@ class BertPreTrainedClassifier(BaseModel):
         if hasattr(self.model, "embeddings"):
             for param in self.model.embeddings.parameters():
                 param.requires_grad = False
-        # else:
-            # raise Exception("Model does not have embeddings attribute")
 
         backbone = self._get_backbone_layers()
         for i in range(keep_frozen):
@@ -263,8 +267,3 @@ class BertPreTrainedClassifier(BaseModel):
 
         self.frozen = False
 
-
-    # def _adjust_predictions(self, predictions: torch.Tensor) -> torch.Tensor:
-    #     """No adjustment needed for 0/1/2 labels"""
-    #     predictions = torch.where(predictions == 2, torch.tensor(-1, device=predictions.device), predictions)
-    #     return predictions

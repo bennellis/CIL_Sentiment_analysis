@@ -12,6 +12,7 @@ import subprocess
 import webbrowser
 import time
 import mlflow
+import yaml
 
 def launch_dashboards():
     # --- Config ---
@@ -32,36 +33,34 @@ def launch_dashboards():
     webbrowser.open(mlflow_uri)
     webbrowser.open(optuna_uri)
 
-# MODEL_NAME = 'distilbert/distilbert-base-uncased'
-STUDY_NAME = "baseline_testing"
-HEAD_LIST = ['mlp','rnn','cnn']
+def main():
+    #load config file
+    with open("config/config.yaml", "r") as file:
+        config = yaml.safe_load(file)
 
-def main(pre_process_name = 'NONE', model_name = 'distilbert/distilbert-base-uncased'):
     # Create the optuna study which shares the experiment name
     study = optuna.create_study(
-        study_name=STUDY_NAME,
+        study_name=config['study_name'],
         direction="maximize",
         storage="sqlite:///optuna_study.db",  # File-based DB
         load_if_exists=True
     )
 
-    mlflow.set_experiment(STUDY_NAME)
-    balance_train_dataloader=False
-    balance_val_dataloader=False
-    use_frozen = False
-    pre_process = False
-    test_model = False
-    use_augmented_data = True
-    head=HEAD_LIST[0]
-    mean_pool = False
+    #setup mlflow experiment
+    mlflow.set_experiment(config['study_name'])
 
-    
-
+    #launch the mlflow and optuna dashboards
     launch_dashboards()
-    objective = Objective(model_name=model_name, balance_train_dataloader=balance_train_dataloader,
-                          balance_val_dataloader=balance_val_dataloader, head=head, use_frozen = use_frozen,
-                          test_model = test_model, pre_process = pre_process, pre_process_name = pre_process_name,
-                          use_augmented_data = use_augmented_data, mean_pool = mean_pool)
+    objective = Objective(model_name=config['model']['name'],
+                          balance_train_dataloader=config['dataloader']['balance_train'],
+                          balance_val_dataloader=config['dataloader']['balance_val'],
+                          head=config['model']['head'],
+                          use_frozen = config['dataloader']['use_frozen'],
+                          test_model = config['model']['test_model'],
+                          pre_process = config['dataloader']['pre_process'],
+                          pre_process_name = config['dataloader']['pre_process_name'],
+                          use_augmented_data = config['dataloader']['use_augmented_data'],
+                          mean_pool = config['model']['mean_pool'])
     study.optimize(objective, n_trials=1)
     # Print optuna study statistics
     print("\n++++++++++++++++++++++++++++++++++\n")
@@ -80,25 +79,4 @@ def main(pre_process_name = 'NONE', model_name = 'distilbert/distilbert-base-unc
 
 
 if __name__ == "__main__":
-
-    pp_list = ['lemmatize',
-            'remove_numbers',
-            'NONE']
-    # pp_list = ['NONE']
-
-    # model_list = [
-    #     'google-bert/bert-base-uncased',
-    #     'FacebookAI/roberta-base',
-    #     'microsoft/deberta-v3-base',
-    #     'answerdotai/ModernBERT-base',
-    # ]
-    # model_list = ['distilbert/distilbert-base-uncased',]
-    # model_list = ['microsoft/deberta-v3-base']
-    model_list = [
-        'FacebookAI/roberta-large',
-        'microsoft/deberta-v3-large',
-        'answerdotai/ModernBERT-large',
-    ]
-
-    for model in model_list:
-        main(model_name = model)
+    main()

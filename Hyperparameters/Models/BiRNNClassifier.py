@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 class BiRNNClassifier(BaseModel):
+    """RNN classification head to be used on top of a bert-like encoder"""
     is_variable_length = True
 
     def __init__(self, input_dim: int, hidden_dim: int = 256, num_layers: int = 3,

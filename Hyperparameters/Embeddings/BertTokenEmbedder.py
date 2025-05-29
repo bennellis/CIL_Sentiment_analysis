@@ -16,6 +16,10 @@ import numpy as np
 from tqdm.auto import tqdm
 
 class BertTokenEmbedder(BaseEmbedding):
+    """The purpose of this class is to embed the input tokens into a space that can be used
+    with just training a classification head quickly on the embeddings. There are options to use just
+    the first of the output tokens (the ['CLS'] token in some bert-like architechtures), to mean_pool the
+    output tokens, or to embed all the output tokens to be used in an RNN / CNN architecture for classification."""
     is_variable_length = True
     pre_compute = True
     def __init__(self,model, head = 'mlp', mean_pool = False):
@@ -135,19 +139,6 @@ class BertTokenEmbedder(BaseEmbedding):
             raise Exception(f"head {self.head} not recognized")
 
         if val:
-            # if balance:
-            #     return DataLoader(
-            #     ds,
-            #     sampler=train_sampler,
-            #     batch_size=16,
-            #     collate_fn=collate_fn,
-            # )
-            # else:
-            #     return DataLoader(
-            #         ds,
-            #         batch_size=16,
-            #         collate_fn=collate_fn,
-            #     )
             return DataLoader(
                 ds,
                 batch_size=16,

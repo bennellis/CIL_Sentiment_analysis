@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CNNClassifier(BaseModel):
+    """CNN Classification head to be used on top of a bert-like encoder"""
     is_variable_length = True
 
     def __init__(self, input_dim: int, num_classes: int = 3,

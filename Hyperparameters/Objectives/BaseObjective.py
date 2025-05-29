@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 from torch.utils.data import DataLoader, TensorDataset
 import os
+import yaml
 
 import mlflow
 import optuna
@@ -22,6 +23,7 @@ from Hyperparameters.data.preprocessing import Preprocessor
 
 
 class Objective:
+    """Objective for training our models with mlflow and optuna for logging"""
     def __init__(self,
                  model_name="distilbert/distilbert-base-uncased",
                  csv_path="data/Sentiment/training.csv",
@@ -64,6 +66,7 @@ class Objective:
 
 
     def _prepare_data(self, csv_path):
+        """Prepare the data for the dataloaders, option to pre-process the data, and/or use the augmented data"""
         df = pd.read_csv(csv_path, index_col=0)
         label_map = {'negative': -1, 'neutral': 0, 'positive': 1}
         df['label_encoded'] = df['label'].map(label_map)
@@ -114,6 +117,7 @@ class Objective:
         return embedder, (X_train, Y_train), (X_val, Y_val), list(val_texts)
 
     def _static_balance_set(self, sentences, labels):
+        """Used to balance the validation or test sets statically"""
         ds = list(zip(sentences, labels))
         class_minus1 = [x for x in ds if x[1] == -1]
         class_0 = [x for x in ds if x[1] == 0]
@@ -136,7 +140,7 @@ class Objective:
         return list(sentences_bal), np.array(labels_bal)
 
     def _prepare_dataloaders(self, use_frozen):
-        """Precompute frozen and unfrozen dataloaders"""
+        """Precompute frozen and unfrozen dataloaders, option to use a custom dynamic sampler for class balancing"""
         X_train, Y_train = self.train_data
         X_val, Y_val = self.val_data
 
@@ -211,28 +215,30 @@ class Objective:
             self.val_loader = DataLoader(TensorDataset(X_val_tensor, Y_val_tensor), batch_size=64)
 
     def __call__(self, trial):
+        """Run the training objective"""
+        with open("config/config.yaml", "r") as file:
+            config = yaml.safe_load(file)
         with mlflow.start_run():
             params = BertPreTrainedClassifier.suggest_hyperparameters(trial)
             mlflow.log_params(params)
 
+
+            # ----------- load the bert encoder with the optuna suggested hyperparameters   --------------
+            # -----------               with the specific classification head               --------------
             model = BertPreTrainedClassifier(model_name=self.model_name,
                                              frozen=True,
                                              **params, head = self.head,
                                              mean_pool = self.mean_pool)
             model.to(get_device())
 
-            frozen_epochs = 0
-            unfrozen_epochs = 3
-            validations_per_epoch = 10
-            keep_frozen_layers = 0
-            early_save = True
 
+            # -------- For logging the chosen parameters to mlflow ---------
             ex_params = {
                 "model_name": self.model_name,
-                "frozen_epochs": frozen_epochs,
-                "unfrozen_epochs": unfrozen_epochs,
-                "validations_per_epoch": validations_per_epoch,
-                "keep_frozen_layers": keep_frozen_layers,
+                "frozen_epochs": config['training']['frozen_epochs'],
+                "unfrozen_epochs": config['training']['unfrozen_epochs'],
+                "validations_per_epoch": config['training']['validations_per_epoch'],
+                "keep_frozen_layers": config['training']['keep_frozen_layers'],
                 'balance_train_dataloader': self.balance_train_dataloader,
                 'balance_val_dataloader': self.balance_val_dataloader,
                 'head': self.head,
@@ -248,15 +254,20 @@ class Objective:
 
             # Train classifier head only
             pre_steps = 0
-            if frozen_epochs > 0:
-                model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=frozen_epochs, log_mlflow=True, initial_steps=0)
+            if config['training']['frozen_epochs'] > 0:
+                model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=config['training']['frozen_epochs'], log_mlflow=True, initial_steps=0)
                 pre_steps = len(self.train_loader_frozen)
 
 
             # Fine-tune transformer layers
-            model.unfreeze(keep_frozen=keep_frozen_layers)
-            model.fit(self.train_loader_unfrozen, self.val_loader_unfrozen, epochs=unfrozen_epochs, log_mlflow=True,
-                      validations_per_epoch=validations_per_epoch, initial_steps = pre_steps*frozen_epochs, early_save = early_save)
+            model.unfreeze(keep_frozen=config['training']['keep_frozen_layers'])
+            model.fit(self.train_loader_unfrozen,
+                      self.val_loader_unfrozen,
+                      epochs=config['training']['unfrozen_epochs'],
+                      log_mlflow=True,
+                      validations_per_epoch=config['training']['validations_per_epoch'],
+                      initial_steps = pre_steps*config['training']['frozen_epochs'],
+                      early_save = config['training']['early_save'])
 
             # Evaluate
             Y_val = self.val_data[1]

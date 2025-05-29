@@ -7,6 +7,7 @@ import mlflow
 from tqdm.auto import tqdm
 import logging
 import matplotlib.pyplot as plt
+import yaml
 
 import torch
 import torch.nn as nn
@@ -53,6 +54,7 @@ class BaseModel(ABC, nn.Module):
                           use_cdw = self.use_cdw)
 
     def _configure_scheduler(self, optimizer: optim.Optimizer, num_warmup_steps: int, num_training_steps: int):
+        """Configure the scheduler. Default is to linearly warm up for 10%, then linearly  warm down to 0"""
         return get_linear_schedule_with_warmup(
             optimizer,
             num_warmup_steps=num_warmup_steps,
@@ -79,7 +81,7 @@ class BaseModel(ABC, nn.Module):
         initial_steps: int = 0,
         early_save = False,
     ):
-        """Train the model with optional validation."""
+        """Train the model with optional validation. option to do early stopping and save weights for best validation"""
         tqdm.write(f'Training {self.__class__.__name__} on {self.device}')
         logging.info(f'Training {self.__class__.__name__} on {self.device}')
         steps_per_epoch = len(train_loader)
@@ -203,12 +205,15 @@ class BaseModel(ABC, nn.Module):
 
     def validate(self, data_loader: DataLoader, log_mlflow: bool = False, steps: int = 0, early_save:bool = False):
         """Validate the model on the validation set"""
+        with open("config/config.yaml", "r") as file:
+            config = yaml.safe_load(file)
         val_loss, val_acc, mae, val_neg_acc, val_nut_acc, val_pos_acc = self.evaluate(data_loader)
         if log_mlflow:
             self.log_to_mlflow(False,val_loss, val_acc, mae, val_neg_acc, val_nut_acc, val_pos_acc, steps)
 
+
         if early_save:
-            model_path = "baseline_plus_augmented"
+            model_path = config['training']['early_save_path']
             dir = "saved_weights/" + self.model_name + "/"
             os.makedirs(dir, exist_ok=True)
             if 1-mae*0.5 > self.best_score:
@@ -217,7 +222,7 @@ class BaseModel(ABC, nn.Module):
                 print(f"{1-mae*0.5} > {self.best_score}, Saved model weights with best score to {full_p}")
                 self.best_score = 1 - mae * 0.5
             if val_loss < self.best_loss:
-                full_p = dir + model_path + "best_loss.pt"
+                full_p = dir + model_path + "_best_loss.pt"
                 torch.save(self.state_dict(), full_p)
                 print(f"{val_loss} < {self.best_loss}, Saved model weights with best loss to {full_p}")
                 self.best_loss = val_loss
@@ -265,6 +270,7 @@ class BaseModel(ABC, nn.Module):
         return self._adjust_predictions(torch.cat(all_preds))
 
     def get_logits(self, data_loader: DataLoader) -> torch.Tensor:
+        """return the logits of the model"""
         self.eval()
         all_logits = []
         pbar = tqdm(data_loader, desc="Predicting",unit='batch', leave=False)
@@ -277,6 +283,7 @@ class BaseModel(ABC, nn.Module):
         return(torch.cat(all_logits))
 
     def plot_metrics(self, train_losses, train_accuracies, val_losses=None, val_accuracies=None):
+        """Plot the results using a numpy plot"""
         plt.figure(figsize=(12, 4))
         plt.subplot(1, 2, 1)
         plt.plot(train_losses, label='Train Loss')
@@ -296,6 +303,7 @@ class BaseModel(ABC, nn.Module):
 
     @staticmethod
     def log_to_mlflow(training:bool, val_loss:float, val_acc:float, mae:float, val_neg_acc:float, val_nut_acc:float, val_pos_acc:float, steps:int):
+        """log the validation and training results to mlflow for analysis"""
         if training:
             prefix = 'train_'
         else:
