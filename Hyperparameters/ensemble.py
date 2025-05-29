@@ -27,6 +27,7 @@ from Hyperparameters.data.preprocessing import Preprocessor
 
 
 def prepare_data(csv_path, model_name, head):
+    """Prepares the data for the ensembling"""
     df = pd.read_csv(csv_path, index_col=0)
     label_map = {'negative': -1, 'neutral': 0, 'positive': 1}
     df['label_encoded'] = df['label'].map(label_map)
@@ -34,26 +35,6 @@ def prepare_data(csv_path, model_name, head):
         df['sentence'], df['label_encoded'],
         stratify=df['label_encoded'], test_size=0.1, random_state=42
     )
-
-    # if pre_process:  # pre-process data
-    #     len_orig_train = len(train_texts)
-    #     train_texts, train_kept_indices = self.pre.transform(train_texts)
-    #     train_labels = train_labels.iloc[train_kept_indices].tolist()
-    #     self.removed_train = len_orig_train - len(train_texts)
-    #     print(f'removed training samples: {self.removed_train}')
-    #
-    #     len_orig_val = len(val_texts)
-    #     all_indices = set(range(len_orig_val))
-    #     val_texts_new, val_kept_indices = self.pre.transform(val_texts)
-    #     kept_set = set(val_kept_indices)
-    #     removed_indices = all_indices - kept_set
-    #     sum_removed = sum(abs(val_labels[i]) for i in removed_indices)
-    #     val_texts = val_texts_new
-    #     val_labels = val_labels.iloc[val_kept_indices].tolist()
-    #     self.removed_val = len_orig_val - len(val_texts)
-    #     print(f'removed validation samples: {self.removed_val}')
-    #
-    #     self.added_val_score = float(sum_removed) / len_orig_val
 
     NUM_SAMPLES = -1
     NUM_VAR_SAMPLES = -1 if NUM_SAMPLES == -1 else int(NUM_SAMPLES / 10)
@@ -68,36 +49,65 @@ def prepare_data(csv_path, model_name, head):
     return embedder, (X_val, Y_val), list(val_texts)
 
 def main(do_test:bool = False, do_validate:bool = True):
+    """Runs the ensemble with testing or validation or both. Required that
+    the user inputs the models they want to test in the following lists:
+    model_names: name of the underlying encoder model used as the backbone of the model
+    ensemble_list: list of indexes of the models you want to test
+    model_vscores: scores of models from validation set (used for weighted ensemble)
+    model_paths: paths to the weights of the models you want to ensemble
+    heads: classification head of that model. Either mlp, cnn, or rnn
+    """
 
+    # these are model parameters to load the model with, only used for training so doesn't matter
     d_params = {"lr": 1e-4,"pt_lr_top": 1e-5,"pt_lr_mid": 5e-6,"pt_lr_bot": 3e-6,"dropout": 0.4,
                 "temperature": 1.0,"ce_weight": 0.2,"margin": 0,"use_cdw": True}
-    params = [d_params,d_params,d_params,d_params,d_params,d_params, d_params]
+
+    # names of the underlying encoder model used in the ensemble
     model_names = ['distilbert/distilbert-base-uncased', 'FacebookAI/roberta-base',
                    'google-bert/bert-base-uncased','FacebookAI/roberta-base',
                    'microsoft/deberta-v3-base','answerdotai/ModernBERT-base',
-                   'microsoft/deberta-v3-base',
+                   'microsoft/deberta-v3-base','FacebookAI/roberta-base',
+                   'microsoft/deberta-v3-base','answerdotai/ModernBERT-base',
+                   'FacebookAI/roberta-base','microsoft/deberta-v3-base',
+                   'answerdotai/ModernBERT-base',
                    ]
+    # names of the underlying encoder model used in the ensemble
+    params = [d_params] * len(model_names)
+    ensemble_list = [4,6,8]  # use this to identify which model indexes to ensemble for this run
+    # ensemble_list = range(len(model_names)) # use this to run all models
 
-    model_vscores = np.array([0.855, 0.875, 0.864, 0.882, 0.902, 0.889, 0.904])
-    # model_vscores = model_vscores[[4, 6]] # This is if you are only running a subset of models
+
+    #this list is for weighting the different models in the ensemble. Right now using a scaling based on validation score
+    model_vscores = np.array([0.855, 0.875, 0.864, 0.882, 0.902, 0.889, 0.904, 0.889, 0.904, 0.890, 0.889, 0.904, 0.890])
+    model_vscores = model_vscores[ensemble_list] # This is if you are only running a subset of models
     max_score = max(model_vscores)
     model_weights = [(vscore - 0.8) / (max_score - 0.8) for vscore in model_vscores]
     t_weights = torch.tensor(model_weights).view(-1, 1, 1)
+    #Path to model saved weights
     model_paths = ['saved_weights/distilbert/distilbert-base-uncased/baseline_no_warmup.pt',
                    'saved_weights/roberta_875_04-27.pt',
                    'saved_weights/google-bert/bert-base-uncased/baseline_1.pt',
                    'saved_weights/FacebookAI/roberta-base/baseline_1.pt',
                    'saved_weights/microsoft/deberta-v3-base/baseline_1.pt',
                    'saved_weights/answerdotai/ModernBERT-base/baseline_1.pt',
-                   'saved_weights/microsoft/deberta-v3-base/baseline_cnn_plus_augmented.pt',]
-    heads = ['mlp','mlp','mlp','mlp','mlp','mlp','cnn']
+                   'saved_weights/microsoft/deberta-v3-base/baseline_cnn_plus_augmented.pt',
+                   'saved_weights/FacebookAI/roberta-base/baseline_plus_augmented.pt',
+                   'saved_weights/microsoft/deberta-v3-base/baseline_plus_augmented.pt',
+                   'saved_weights/answerdotai/ModernBERT-base/baseline_plus_augmented.pt',
+                   'saved_weights/FacebookAI/roberta-base/baseline_plus_augmentedbest_loss.pt',
+                   'saved_weights/microsoft/deberta-v3-base/baseline_plus_augmentedbest_loss.pt',
+                   'saved_weights/answerdotai/ModernBERT-base/baseline_plus_augmentedbest_loss.pt',
+                   ]
+    #classification head used, either mlp, cnn, or rnn
+    heads = ['mlp','mlp','mlp','mlp','mlp','mlp','cnn','mlp','mlp','mlp','mlp','mlp','mlp']
 
     predictions = []
     test_predictions = []
     hard_predictions = []
     test_hard_predictions = []
     final_Y_val =  None
-    for i in range(len(model_names)):
+    for i in ensemble_list:
+        #for each model, load it, and then validate and / or test it. save individual results to file and also for ensemble.
         model = BertPreTrainedClassifier(model_name=model_names[i],frozen=False,
                                                      **(params[i]), head = heads[i])
         print("Loading model from {}".format(model_paths[i]))
@@ -128,10 +138,6 @@ def main(do_test:bool = False, do_validate:bool = True):
         if do_test:
             test_data = pd.read_csv('data/Sentiment/test.csv', index_col=0)
             orig_size = len(test_data)
-            # if pre_process:
-            #     sentences, kept_indices = self.pre.transform(test_data["sentence"])
-            #     X_test = self.embedder.transform(sentences)
-            # else:
             X_test = embedder.transform(test_data['sentence'])
             Y_test_fake_labels = np.ones(X_test.shape[0])
             dataset_test = EmbeddingDataset(X_test, Y_test_fake_labels)
@@ -152,12 +158,8 @@ def main(do_test:bool = False, do_validate:bool = True):
             submission_unweighted.to_csv(csv_path, index=False)  # Update filename and path as needed
             print(f"Test predictions saved to '{csv_path}'")
 
-            # if self.pre_process:
-            #     full_labels = pd.Series(['neutral'] * len(test_data), index=test_data.index)
-            #     full_labels.iloc[kept_indices] = y_labels.values
-            #     y_labels = full_labels
-
     if do_validate:
+        #ensemble on validation set
         stacked_outputs = torch.stack(predictions)
         weighted_sum = (t_weights * stacked_outputs).sum(dim=0)
         unweighted_sum = stacked_outputs.sum(dim=0)
@@ -207,19 +209,8 @@ def main(do_test:bool = False, do_validate:bool = True):
         conf_matrix = confusion_matrix(final_Y_val, final_predictions_hard, labels=[-1, 0, 1])
         print(f"Validation Confusion Matrix (hard voting):\n{conf_matrix}")
 
-        # print("hard voting:")
-        # hard_preds_tensor = torch.stack(hard_predictions)
-        # final_predictions_hard, _ = torch.mode(hard_preds_tensor, dim=0)
-        #
-        # mae_hard = mean_absolute_error(final_Y_val, final_predictions_hard)
-        # score = 0.5 * (2 - mae_hard)
-        # print(f"ensemble (hard voting):")
-        # print(f"score: {score}")
-        #
-        # conf_matrix = confusion_matrix(final_Y_val, final_predictions_hard, labels=[-1, 0, 1])
-        # print(f"Validation Confusion Matrix (hard voting):\n{conf_matrix}")
-
     if do_test:
+        #ensemble on test set, and save three files. Weighted soft ensemble, unweighted soft ensemble, and hard ensemble
         stacked_test_outputs = torch.stack(test_predictions)
         unweighted_test_sum = stacked_test_outputs.sum(dim=0)
         weighted_test_sum = (t_weights * stacked_test_outputs).sum(dim=0)
@@ -257,15 +248,6 @@ def main(do_test:bool = False, do_validate:bool = True):
         submission_hard.to_csv('test_predictions_hard.csv', index=False)
 
         print("Test hard predictions saved to 'test_predictions_hard.csv'")
-
-        # print("hard voting on test predictions:")
-        # test_hard_preds_tensor = torch.stack(test_hard_predictions)
-        # final_test_predictions_hard, _ = torch.mode(test_hard_preds_tensor, dim=0)
-        #
-        # y_labels_hard = pd.Series(final_test_predictions_hard).map({-1: 'negative', 0: 'neutral', 1: 'positive'})
-        # submission_hard = pd.DataFrame({'id': test_data.index, 'label': y_labels_hard})
-        # submission_hard.to_csv('test_predictions_hard.csv', index=False)
-        # print("Test hard predictions saved to 'test_predictions_hard.csv'")
 
 if __name__ == "__main__":
     main(do_test=True, do_validate = False)
