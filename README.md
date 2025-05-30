@@ -3,6 +3,12 @@ Authors
 Ben Ellis, Bruce Balfour, Florian Zogaj, Jakob Hütteneder
 Department of Computer Science, ETH Zurich
 
+The main directory used for testing our models was the Hyperparameters directory. 
+
+To run use or code to train some models, pip install the requirements.txt using Python 3.10, and simply edit the config in Hyperparameters/config/config.yaml to the configuration you want, and run the Hyperparameters/main.py file.
+
+If you wish to test multiple models in the ensemble, you will have to edit the lists located in the Hyperparameters/ensemble.py file to work with the weights you have saved.
+
 Overview
 This project focuses on sentence-level sentiment classification of user-generated reviews. Each review is categorized into one of three sentiment classes: positive, neutral, or negative.
 
@@ -85,10 +91,3 @@ Early stopping and validation monitoring are crucial to avoid overfitting.
 
 Find our full report uploaded with our github.
 
-
-
-The main directory used for testing our models was the Hyperparameters directory. 
-
-To run use or code to train some models, pip install the requirements.txt using Python 3.10, and simply edit the config in Hyperparameters/config/config.yaml to the configuration you want, and run the main.py file.
-
-If you wish to test multiple models in the ensemble, you will have to edit the lists located in the ensemble.py file to work with the weights you have saved.

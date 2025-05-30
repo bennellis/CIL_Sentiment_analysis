@@ -255,7 +255,7 @@ class Objective:
             # Train classifier head only
             pre_steps = 0
             if config['training']['frozen_epochs'] > 0:
-                model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=config['training']['frozen_epochs'], log_mlflow=True, initial_steps=0)
+                model.fit(self.train_loader_frozen, self.val_loader_frozen, epochs=int(config['training']['frozen_epochs']), log_mlflow=True, initial_steps=0)
                 pre_steps = len(self.train_loader_frozen)
 
 

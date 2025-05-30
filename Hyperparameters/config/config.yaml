@@ -12,10 +12,10 @@ model:
   test_model: false #use this to test model and save csv after run
   head: 'mlp' # use this to define the classification head
   mean_pool: false # use this to mean pool the hidden state of encoder, rather than just taking first '[CLS]' output
-  lr: 1e-4 #learning rate for classification head
-  pt_lr_top: 1e-5 # learning rate for top third layers of encoder backbone
-  pt_lr_mid: 5e-6 # learning rate for mid third layers of encoder backbone
-  pt_lr_bot: 3e-6 # learning rate for bottom third layers of encoder backbone
+  lr: 0.0001 #learning rate for classification head
+  pt_lr_top: 0.00001 # learning rate for top third layers of encoder backbone
+  pt_lr_mid: 0.000005 # learning rate for mid third layers of encoder backbone
+  pt_lr_bot: 0.000003 # learning rate for bottom third layers of encoder backbone
   dropout: 0.4 # dropout for classification head
   temperature: 1.0 # temperature for softmax in loss function
   ce_weight: 0.2 # weighting cross entropy loss between MAE loss and CE loss (when not using CDW loss function)
