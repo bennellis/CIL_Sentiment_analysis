@@ -1369,3 +1369,505 @@ Train Loss: 0.1604, Acc: 0.8134 Train Neg Acc: 0.8338, Nut Acc: 0.7612, Pos Acc:
 2025-04-27 17:29:23 - INFO - Epoch 2/2: 
 Train Loss: 0.1343, Acc: 0.8426 Train Neg Acc: 0.8622, Nut Acc: 0.7945, Pos Acc: 0.8752
  Val Loss: 0.1782, Acc: 0.7839 Val Neg Acc: 0.6979, Nut Acc: 0.8406, Pos Acc: 0.7723
+2025-05-04 10:16:59 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 10:16:59 - INFO - Epoch 1/6: 
+Train Loss: 0.4854, Acc: 0.3316 Train Neg Acc: 0.3088, Nut Acc: 0.3360, Pos Acc: 0.2500
+ Val Loss: 0.3906, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:00 - INFO - Epoch 2/6: 
+Train Loss: 0.4649, Acc: 0.3333 Train Neg Acc: 0.0000, Nut Acc: 0.3316, Pos Acc: 0.6000
+ Val Loss: 0.3978, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:00 - INFO - Epoch 3/6: 
+Train Loss: 0.4605, Acc: 0.3281 Train Neg Acc: 0.1429, Nut Acc: 0.3310, Pos Acc: 0.0000
+ Val Loss: 0.3955, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:01 - INFO - Epoch 4/6: 
+Train Loss: 0.4518, Acc: 0.3333 Train Neg Acc: 1.0000, Nut Acc: 0.3322, Pos Acc: 0.0000
+ Val Loss: 0.3960, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:01 - INFO - Epoch 5/6: 
+Train Loss: 0.4569, Acc: 0.3351 Train Neg Acc: 0.2000, Nut Acc: 0.3363, Pos Acc: -1.0000
+ Val Loss: 0.3955, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:01 - INFO - Epoch 6/6: 
+Train Loss: 0.4530, Acc: 0.3333 Train Neg Acc: 0.2500, Nut Acc: 0.3321, Pos Acc: 1.0000
+ Val Loss: 0.3962, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:20 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 10:17:21 - INFO - Epoch 1/30: 
+Train Loss: 0.4554, Acc: 0.3368 Train Neg Acc: 0.5000, Nut Acc: 0.3333, Pos Acc: 0.6000
+ Val Loss: 0.3970, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:21 - INFO - Epoch 2/30: 
+Train Loss: 0.4571, Acc: 0.3316 Train Neg Acc: 0.5000, Nut Acc: 0.3304, Pos Acc: 0.0000
+ Val Loss: 0.3958, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:22 - INFO - Epoch 3/30: 
+Train Loss: 0.4480, Acc: 0.3386 Train Neg Acc: 0.6667, Nut Acc: 0.3363, Pos Acc: 0.5000
+ Val Loss: 0.4059, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:22 - INFO - Epoch 4/30: 
+Train Loss: 0.4529, Acc: 0.3316 Train Neg Acc: 0.2500, Nut Acc: 0.3333, Pos Acc: 0.2000
+ Val Loss: 0.4027, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:22 - INFO - Epoch 5/30: 
+Train Loss: 0.4517, Acc: 0.3333 Train Neg Acc: 0.6000, Nut Acc: 0.3327, Pos Acc: 0.1667
+ Val Loss: 0.4016, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:23 - INFO - Epoch 6/30: 
+Train Loss: 0.4479, Acc: 0.3351 Train Neg Acc: 0.5000, Nut Acc: 0.3351, Pos Acc: 0.2222
+ Val Loss: 0.4064, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:23 - INFO - Epoch 7/30: 
+Train Loss: 0.4522, Acc: 0.3351 Train Neg Acc: 0.1818, Nut Acc: 0.3357, Pos Acc: 0.6000
+ Val Loss: 0.3952, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:24 - INFO - Epoch 8/30: 
+Train Loss: 0.4502, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3339, Pos Acc: 0.2500
+ Val Loss: 0.4001, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:24 - INFO - Epoch 9/30: 
+Train Loss: 0.4454, Acc: 0.3404 Train Neg Acc: 0.7500, Nut Acc: 0.3351, Pos Acc: 0.6000
+ Val Loss: 0.4079, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:25 - INFO - Epoch 10/30: 
+Train Loss: 0.4476, Acc: 0.3404 Train Neg Acc: 0.6250, Nut Acc: 0.3333, Pos Acc: 0.2500
+ Val Loss: 0.4025, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:25 - INFO - Epoch 11/30: 
+Train Loss: 0.4448, Acc: 0.3351 Train Neg Acc: 0.3333, Nut Acc: 0.3339, Pos Acc: 0.4286
+ Val Loss: 0.4091, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:25 - INFO - Epoch 12/30: 
+Train Loss: 0.4380, Acc: 0.3491 Train Neg Acc: 0.5714, Nut Acc: 0.3424, Pos Acc: 0.5000
+ Val Loss: 0.4024, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4400, Pos Acc: -1.0000
+2025-05-04 10:17:26 - INFO - Epoch 13/30: 
+Train Loss: 0.4406, Acc: 0.3509 Train Neg Acc: 0.3000, Nut Acc: 0.3455, Pos Acc: 0.6154
+ Val Loss: 0.4039, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:26 - INFO - Epoch 14/30: 
+Train Loss: 0.4381, Acc: 0.3614 Train Neg Acc: 0.4667, Nut Acc: 0.3500, Pos Acc: 0.6667
+ Val Loss: 0.4033, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:27 - INFO - Epoch 15/30: 
+Train Loss: 0.4434, Acc: 0.3351 Train Neg Acc: 0.2857, Nut Acc: 0.3352, Pos Acc: 0.3571
+ Val Loss: 0.4017, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:27 - INFO - Epoch 16/30: 
+Train Loss: 0.4408, Acc: 0.3544 Train Neg Acc: 0.6250, Nut Acc: 0.3418, Pos Acc: 0.7500
+ Val Loss: 0.3994, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:27 - INFO - Epoch 17/30: 
+Train Loss: 0.4354, Acc: 0.3579 Train Neg Acc: 0.6667, Nut Acc: 0.3431, Pos Acc: 0.7692
+ Val Loss: 0.4091, Acc: 0.4500 Val Neg Acc: -1.0000, Nut Acc: 0.4536, Pos Acc: 0.3333
+2025-05-04 10:17:28 - INFO - Epoch 18/30: 
+Train Loss: 0.4361, Acc: 0.3526 Train Neg Acc: 0.5455, Nut Acc: 0.3438, Pos Acc: 0.5000
+ Val Loss: 0.4057, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:28 - INFO - Epoch 19/30: 
+Train Loss: 0.4402, Acc: 0.3561 Train Neg Acc: 0.6154, Nut Acc: 0.3446, Pos Acc: 0.4783
+ Val Loss: 0.4024, Acc: 0.4400 Val Neg Acc: -1.0000, Nut Acc: 0.4444, Pos Acc: 0.0000
+2025-05-04 10:17:29 - INFO - Epoch 20/30: 
+Train Loss: 0.4348, Acc: 0.3754 Train Neg Acc: 0.7500, Nut Acc: 0.3544, Pos Acc: 0.5556
+ Val Loss: 0.4039, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:29 - INFO - Epoch 21/30: 
+Train Loss: 0.4311, Acc: 0.3579 Train Neg Acc: 0.5714, Nut Acc: 0.3462, Pos Acc: 0.7000
+ Val Loss: 0.4018, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4536, Pos Acc: 0.5000
+2025-05-04 10:17:29 - INFO - Epoch 22/30: 
+Train Loss: 0.4329, Acc: 0.3684 Train Neg Acc: 0.6154, Nut Acc: 0.3481, Pos Acc: 0.8235
+ Val Loss: 0.4042, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:30 - INFO - Epoch 23/30: 
+Train Loss: 0.4352, Acc: 0.3649 Train Neg Acc: 0.5294, Nut Acc: 0.3484, Pos Acc: 0.6364
+ Val Loss: 0.4025, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:30 - INFO - Epoch 24/30: 
+Train Loss: 0.4372, Acc: 0.3544 Train Neg Acc: 0.5000, Nut Acc: 0.3432, Pos Acc: 0.6000
+ Val Loss: 0.4039, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:31 - INFO - Epoch 25/30: 
+Train Loss: 0.4382, Acc: 0.3684 Train Neg Acc: 0.5625, Nut Acc: 0.3555, Pos Acc: 0.5000
+ Val Loss: 0.4035, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:31 - INFO - Epoch 26/30: 
+Train Loss: 0.4387, Acc: 0.3526 Train Neg Acc: 0.4444, Nut Acc: 0.3446, Pos Acc: 0.5000
+ Val Loss: 0.4040, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:31 - INFO - Epoch 27/30: 
+Train Loss: 0.4304, Acc: 0.3754 Train Neg Acc: 0.8333, Nut Acc: 0.3508, Pos Acc: 0.6800
+ Val Loss: 0.4043, Acc: 0.4800 Val Neg Acc: 1.0000, Nut Acc: 0.4681, Pos Acc: 0.6000
+2025-05-04 10:17:32 - INFO - Epoch 28/30: 
+Train Loss: 0.4352, Acc: 0.3702 Train Neg Acc: 0.4286, Nut Acc: 0.3524, Pos Acc: 0.6452
+ Val Loss: 0.4036, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:32 - INFO - Epoch 29/30: 
+Train Loss: 0.4275, Acc: 0.3667 Train Neg Acc: 0.5833, Nut Acc: 0.3482, Pos Acc: 0.7143
+ Val Loss: 0.4026, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:17:33 - INFO - Epoch 30/30: 
+Train Loss: 0.4227, Acc: 0.3947 Train Neg Acc: 0.7826, Nut Acc: 0.3581, Pos Acc: 0.8636
+ Val Loss: 0.4031, Acc: 0.4600 Val Neg Acc: 1.0000, Nut Acc: 0.4583, Pos Acc: 0.3333
+2025-05-04 10:18:01 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 10:18:25 - INFO - Epoch 1/2: 
+Train Loss: 0.4446, Acc: 0.3947 Train Neg Acc: 0.4211, Nut Acc: 0.3768, Pos Acc: 0.4615
+ Val Loss: 0.3639, Acc: 0.5200 Val Neg Acc: 0.5455, Nut Acc: 0.5000, Pos Acc: 0.8000
+2025-05-04 10:18:50 - INFO - Epoch 2/2: 
+Train Loss: 0.3479, Acc: 0.5772 Train Neg Acc: 0.6690, Nut Acc: 0.4881, Pos Acc: 0.6742
+ Val Loss: 0.3781, Acc: 0.5700 Val Neg Acc: 0.5000, Nut Acc: 0.6735, Pos Acc: 0.4516
+2025-05-04 18:15:23 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 18:15:54 - INFO - Epoch 1/6: 
+Train Loss: 0.4474, Acc: 0.3489 Train Neg Acc: 0.5117, Nut Acc: 0.3408, Pos Acc: 0.4836
+ Val Loss: 0.3708, Acc: 0.5132 Val Neg Acc: 0.4154, Nut Acc: 0.5169, Pos Acc: 0.7196
+2025-05-04 18:16:23 - INFO - Epoch 2/6: 
+Train Loss: 0.4247, Acc: 0.4235 Train Neg Acc: 0.5434, Nut Acc: 0.3833, Pos Acc: 0.5787
+ Val Loss: 0.3606, Acc: 0.5636 Val Neg Acc: 0.4336, Nut Acc: 0.5916, Pos Acc: 0.5575
+2025-05-04 18:16:51 - INFO - Epoch 3/6: 
+Train Loss: 0.4157, Acc: 0.4556 Train Neg Acc: 0.5460, Nut Acc: 0.4076, Pos Acc: 0.5826
+ Val Loss: 0.3560, Acc: 0.5717 Val Neg Acc: 0.4394, Nut Acc: 0.5999, Pos Acc: 0.5829
+2025-05-04 18:17:19 - INFO - Epoch 4/6: 
+Train Loss: 0.4127, Acc: 0.4611 Train Neg Acc: 0.5463, Nut Acc: 0.4129, Pos Acc: 0.5821
+ Val Loss: 0.3474, Acc: 0.5726 Val Neg Acc: 0.4582, Nut Acc: 0.5858, Pos Acc: 0.6128
+2025-05-04 18:17:47 - INFO - Epoch 5/6: 
+Train Loss: 0.4104, Acc: 0.4669 Train Neg Acc: 0.5470, Nut Acc: 0.4169, Pos Acc: 0.5904
+ Val Loss: 0.3524, Acc: 0.5725 Val Neg Acc: 0.4307, Nut Acc: 0.5980, Pos Acc: 0.6322
+2025-05-04 18:18:14 - INFO - Epoch 6/6: 
+Train Loss: 0.4090, Acc: 0.4715 Train Neg Acc: 0.5546, Nut Acc: 0.4201, Pos Acc: 0.5960
+ Val Loss: 0.3477, Acc: 0.5744 Val Neg Acc: 0.4482, Nut Acc: 0.5908, Pos Acc: 0.6308
+2025-05-04 18:18:42 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 19:02:04 - INFO - Epoch 1/2: 
+Train Loss: 0.2562, Acc: 0.6942 Train Neg Acc: 0.7355, Nut Acc: 0.6172, Pos Acc: 0.7650
+ Val Loss: 0.2086, Acc: 0.7479 Val Neg Acc: 0.6248, Nut Acc: 0.8066, Pos Acc: 0.7682
+2025-05-04 19:45:40 - INFO - Epoch 2/2: 
+Train Loss: 0.1835, Acc: 0.7838 Train Neg Acc: 0.8129, Nut Acc: 0.7202, Pos Acc: 0.8314
+ Val Loss: 0.1975, Acc: 0.7597 Val Neg Acc: 0.6549, Nut Acc: 0.8161, Pos Acc: 0.7630
+2025-05-04 20:08:34 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-04 20:51:57 - INFO - Epoch 1/2: 
+Train Loss: 0.1685, Acc: 0.8032 Train Neg Acc: 0.8354, Nut Acc: 0.7423, Pos Acc: 0.8419
+ Val Loss: 0.2141, Acc: 0.7418 Val Neg Acc: 0.5987, Nut Acc: 0.8382, Pos Acc: 0.7537
+2025-05-04 21:35:35 - INFO - Epoch 2/2: 
+Train Loss: 0.1160, Acc: 0.8659 Train Neg Acc: 0.8850, Nut Acc: 0.8193, Pos Acc: 0.8979
+ Val Loss: 0.2012, Acc: 0.7628 Val Neg Acc: 0.6611, Nut Acc: 0.8250, Pos Acc: 0.7570
+2025-05-11 15:50:59 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-11 15:51:30 - INFO - Epoch 1/6: 
+Train Loss: 0.3933, Acc: 0.4719 Train Neg Acc: 0.6010, Nut Acc: 0.4008, Pos Acc: 0.6763
+ Val Loss: 0.2772, Acc: 0.6616 Val Neg Acc: 0.5630, Nut Acc: 0.6659, Pos Acc: 0.7729
+2025-05-11 15:52:02 - INFO - Epoch 2/6: 
+Train Loss: 0.3159, Acc: 0.6204 Train Neg Acc: 0.6558, Nut Acc: 0.5478, Pos Acc: 0.7061
+ Val Loss: 0.2815, Acc: 0.6620 Val Neg Acc: 0.5087, Nut Acc: 0.7205, Pos Acc: 0.7472
+2025-05-11 15:52:33 - INFO - Epoch 3/6: 
+Train Loss: 0.3117, Acc: 0.6275 Train Neg Acc: 0.6610, Nut Acc: 0.5583, Pos Acc: 0.7039
+ Val Loss: 0.2685, Acc: 0.6740 Val Neg Acc: 0.5480, Nut Acc: 0.7056, Pos Acc: 0.7453
+2025-05-11 15:53:05 - INFO - Epoch 4/6: 
+Train Loss: 0.3090, Acc: 0.6307 Train Neg Acc: 0.6620, Nut Acc: 0.5614, Pos Acc: 0.7098
+ Val Loss: 0.2728, Acc: 0.6717 Val Neg Acc: 0.5278, Nut Acc: 0.7205, Pos Acc: 0.7441
+2025-05-11 15:53:36 - INFO - Epoch 5/6: 
+Train Loss: 0.3070, Acc: 0.6333 Train Neg Acc: 0.6654, Nut Acc: 0.5642, Pos Acc: 0.7105
+ Val Loss: 0.2645, Acc: 0.6794 Val Neg Acc: 0.5624, Nut Acc: 0.7101, Pos Acc: 0.7306
+2025-05-11 15:54:08 - INFO - Epoch 6/6: 
+Train Loss: 0.3064, Acc: 0.6352 Train Neg Acc: 0.6679, Nut Acc: 0.5668, Pos Acc: 0.7095
+ Val Loss: 0.2672, Acc: 0.6761 Val Neg Acc: 0.5434, Nut Acc: 0.7159, Pos Acc: 0.7370
+2025-05-11 15:54:19 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-11 16:29:41 - INFO - Epoch 1/4: 
+Train Loss: 0.2615, Acc: 0.6922 Train Neg Acc: 0.7175, Nut Acc: 0.6247, Pos Acc: 0.7630
+ Val Loss: 0.2216, Acc: 0.7344 Val Neg Acc: 0.6437, Nut Acc: 0.7871, Pos Acc: 0.7198
+2025-05-11 17:04:20 - INFO - Epoch 2/4: 
+Train Loss: 0.2059, Acc: 0.7608 Train Neg Acc: 0.7745, Nut Acc: 0.7105, Pos Acc: 0.8072
+ Val Loss: 0.2119, Acc: 0.7476 Val Neg Acc: 0.6363, Nut Acc: 0.7881, Pos Acc: 0.7806
+2025-05-11 17:38:55 - INFO - Epoch 3/4: 
+Train Loss: 0.1602, Acc: 0.8134 Train Neg Acc: 0.8333, Nut Acc: 0.7611, Pos Acc: 0.8534
+ Val Loss: 0.2150, Acc: 0.7454 Val Neg Acc: 0.6184, Nut Acc: 0.8290, Pos Acc: 0.7430
+2025-05-11 18:13:29 - INFO - Epoch 4/4: 
+Train Loss: 0.1225, Acc: 0.8580 Train Neg Acc: 0.8779, Nut Acc: 0.8075, Pos Acc: 0.8947
+ Val Loss: 0.2035, Acc: 0.7588 Val Neg Acc: 0.6519, Nut Acc: 0.8170, Pos Acc: 0.7601
+2025-05-11 21:01:38 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-11 21:38:12 - INFO - Epoch 1/2: 
+Train Loss: 0.1545, Acc: 0.7446 Train Neg Acc: 0.7773, Nut Acc: 0.6671, Pos Acc: 0.8146
+ Val Loss: 0.1902, Acc: 0.6897 Val Neg Acc: 0.5215, Nut Acc: 0.7748, Pos Acc: 0.7619
+2025-05-11 21:40:01 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-11 21:40:44 - INFO - Epoch 1/6: 
+Train Loss: 2.7658, Acc: 0.1981 Train Neg Acc: 0.1780, Nut Acc: 0.2337, Pos Acc: 0.2121
+ Val Loss: 2.4889, Acc: 0.1135 Val Neg Acc: 0.0684, Nut Acc: 0.1812, Pos Acc: 0.1578
+2025-05-12 08:29:18 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:29:40 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:31:29 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:32:46 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:33:24 - INFO - Epoch 1/6: 
+Train Loss: 2.1134, Acc: 0.5394 Train Neg Acc: 0.5289, Nut Acc: 0.5613, Pos Acc: 0.5337
+ Val Loss: 1.7567, Acc: 0.6508 Val Neg Acc: 0.5048, Nut Acc: 0.7666, Pos Acc: 0.6403
+2025-05-12 08:33:57 - INFO - Epoch 2/6: 
+Train Loss: 1.8329, Acc: 0.6325 Train Neg Acc: 0.6262, Nut Acc: 0.6286, Pos Acc: 0.6437
+ Val Loss: 1.6885, Acc: 0.6676 Val Neg Acc: 0.5216, Nut Acc: 0.7593, Pos Acc: 0.6704
+2025-05-12 08:34:28 - INFO - Epoch 3/6: 
+Train Loss: 1.8088, Acc: 0.6382 Train Neg Acc: 0.6343, Nut Acc: 0.6340, Pos Acc: 0.6468
+ Val Loss: 1.7290, Acc: 0.6588 Val Neg Acc: 0.4883, Nut Acc: 0.7826, Pos Acc: 0.6811
+2025-05-12 08:35:00 - INFO - Epoch 4/6: 
+Train Loss: 1.8006, Acc: 0.6406 Train Neg Acc: 0.6344, Nut Acc: 0.6361, Pos Acc: 0.6520
+ Val Loss: 1.7112, Acc: 0.6604 Val Neg Acc: 0.4986, Nut Acc: 0.7822, Pos Acc: 0.6670
+2025-05-12 08:35:33 - INFO - Epoch 5/6: 
+Train Loss: 1.7859, Acc: 0.6439 Train Neg Acc: 0.6393, Nut Acc: 0.6369, Pos Acc: 0.6562
+ Val Loss: 1.7013, Acc: 0.6644 Val Neg Acc: 0.5024, Nut Acc: 0.7809, Pos Acc: 0.6744
+2025-05-12 08:36:09 - INFO - Epoch 6/6: 
+Train Loss: 1.7844, Acc: 0.6448 Train Neg Acc: 0.6368, Nut Acc: 0.6400, Pos Acc: 0.6589
+ Val Loss: 1.7199, Acc: 0.6586 Val Neg Acc: 0.4960, Nut Acc: 0.7893, Pos Acc: 0.6640
+2025-05-12 08:36:14 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:36:46 - INFO - Epoch 1/6: 
+Train Loss: 1.1780, Acc: 0.5319 Train Neg Acc: 0.5147, Nut Acc: 0.6129, Pos Acc: 0.5079
+ Val Loss: 0.9599, Acc: 0.6434 Val Neg Acc: 0.4863, Nut Acc: 0.7794, Pos Acc: 0.6388
+2025-05-12 08:37:51 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:38:17 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:38:39 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:39:18 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:39:54 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:40:01 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:40:34 - INFO - Epoch 1/6: 
+Train Loss: 20.6996, Acc: 0.4275 Train Neg Acc: 0.4351, Nut Acc: 0.3582, Pos Acc: 0.4219
+ Val Loss: 11.3818, Acc: 0.3922 Val Neg Acc: 0.3350, Nut Acc: 1.0000, Pos Acc: 0.4633
+2025-05-12 08:41:06 - INFO - Epoch 2/6: 
+Train Loss: 16.6194, Acc: 0.4615 Train Neg Acc: 0.4741, Nut Acc: 1.0000, Pos Acc: 0.4495
+ Val Loss: 11.3548, Acc: 0.3894 Val Neg Acc: 0.3245, Nut Acc: 1.0000, Pos Acc: 0.4826
+2025-05-12 08:47:36 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:50:10 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:50:54 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:50:59 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:51:55 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:52:09 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:52:40 - INFO - Epoch 1/6: 
+Train Loss: 0.7920, Acc: 0.4937 Train Neg Acc: 0.4839, Nut Acc: 0.5493, Pos Acc: 0.4699
+ Val Loss: 0.5326, Acc: 0.6199 Val Neg Acc: 0.4768, Nut Acc: 0.8101, Pos Acc: 0.5852
+2025-05-12 08:53:11 - INFO - Epoch 2/6: 
+Train Loss: 0.6554, Acc: 0.5762 Train Neg Acc: 0.5589, Nut Acc: 0.6640, Pos Acc: 0.5375
+ Val Loss: 0.5392, Acc: 0.6221 Val Neg Acc: 0.4398, Nut Acc: 0.8034, Pos Acc: 0.6581
+2025-05-12 08:55:07 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:55:45 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 08:56:15 - INFO - Epoch 1/6: 
+Train Loss: 0.3429, Acc: 0.3337 Train Neg Acc: 0.3493, Nut Acc: 0.3334, Pos Acc: 0.3871
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 08:56:46 - INFO - Epoch 2/6: 
+Train Loss: 0.3334, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 08:57:17 - INFO - Epoch 3/6: 
+Train Loss: 0.3333, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 08:57:48 - INFO - Epoch 4/6: 
+Train Loss: 0.3333, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 08:58:22 - INFO - Epoch 5/6: 
+Train Loss: 0.3333, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 08:59:00 - INFO - Epoch 6/6: 
+Train Loss: 0.3333, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: 0.2593, Acc: 0.4814 Val Neg Acc: -1.0000, Nut Acc: 0.4814, Pos Acc: -1.0000
+2025-05-12 09:00:03 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:00:47 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:02:13 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:02:35 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:02:43 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:02:49 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:03:11 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:04:00 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:31:20 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:31:24 - INFO - Epoch 1/6: 
+Train Loss: 5.1511, Acc: 0.3222 Train Neg Acc: 0.3128, Nut Acc: 0.4461, Pos Acc: 0.3054
+ Val Loss: 4.9432, Acc: 0.1440 Val Neg Acc: 0.1183, Nut Acc: 0.9200, Pos Acc: 0.1341
+2025-05-12 09:31:28 - INFO - Epoch 2/6: 
+Train Loss: 5.1005, Acc: 0.2925 Train Neg Acc: 0.2463, Nut Acc: 0.6791, Pos Acc: 0.2600
+ Val Loss: 4.9417, Acc: 0.1490 Val Neg Acc: 0.1031, Nut Acc: 0.9459, Pos Acc: 0.1407
+2025-05-12 09:31:31 - INFO - Epoch 3/6: 
+Train Loss: 5.0926, Acc: 0.2938 Train Neg Acc: 0.2404, Nut Acc: 0.7040, Pos Acc: 0.2539
+ Val Loss: 4.9401, Acc: 0.1650 Val Neg Acc: 0.0828, Nut Acc: 0.9259, Pos Acc: 0.1581
+2025-05-12 09:31:35 - INFO - Epoch 4/6: 
+Train Loss: 5.0869, Acc: 0.2787 Train Neg Acc: 0.2271, Nut Acc: 0.7106, Pos Acc: 0.2320
+ Val Loss: 4.9376, Acc: 0.1630 Val Neg Acc: 0.0952, Nut Acc: 0.9138, Pos Acc: 0.1439
+2025-05-12 09:31:38 - INFO - Epoch 5/6: 
+Train Loss: 5.0858, Acc: 0.2836 Train Neg Acc: 0.2282, Nut Acc: 0.7147, Pos Acc: 0.2408
+ Val Loss: 4.9399, Acc: 0.1530 Val Neg Acc: 0.0845, Nut Acc: 0.9184, Pos Acc: 0.1471
+2025-05-12 09:31:42 - INFO - Epoch 6/6: 
+Train Loss: 5.0846, Acc: 0.2833 Train Neg Acc: 0.2268, Nut Acc: 0.7397, Pos Acc: 0.2352
+ Val Loss: 4.9392, Acc: 0.1570 Val Neg Acc: 0.0926, Nut Acc: 0.9245, Pos Acc: 0.1425
+2025-05-12 09:33:33 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:33:37 - INFO - Epoch 1/6: 
+Train Loss: 3.8997, Acc: 0.3740 Train Neg Acc: 0.4300, Nut Acc: 0.3522, Pos Acc: 0.3906
+ Val Loss: 3.6979, Acc: 0.4990 Val Neg Acc: 0.6250, Nut Acc: 0.4902, Pos Acc: 1.0000
+2025-05-12 09:33:41 - INFO - Epoch 2/6: 
+Train Loss: 3.8174, Acc: 0.4593 Train Neg Acc: 0.6347, Nut Acc: 0.3828, Pos Acc: 0.6060
+ Val Loss: 3.6833, Acc: 0.5510 Val Neg Acc: 0.6214, Nut Acc: 0.5239, Pos Acc: 0.9737
+2025-05-12 09:33:44 - INFO - Epoch 3/6: 
+Train Loss: 3.8020, Acc: 0.4757 Train Neg Acc: 0.6528, Nut Acc: 0.3881, Pos Acc: 0.6752
+ Val Loss: 3.6723, Acc: 0.5750 Val Neg Acc: 0.6623, Nut Acc: 0.5377, Pos Acc: 0.8523
+2025-05-12 09:33:48 - INFO - Epoch 4/6: 
+Train Loss: 3.7916, Acc: 0.4846 Train Neg Acc: 0.6909, Nut Acc: 0.3913, Pos Acc: 0.6726
+ Val Loss: 3.6704, Acc: 0.5680 Val Neg Acc: 0.6404, Nut Acc: 0.5341, Pos Acc: 0.8649
+2025-05-12 09:33:51 - INFO - Epoch 5/6: 
+Train Loss: 3.7893, Acc: 0.4894 Train Neg Acc: 0.6811, Nut Acc: 0.3938, Pos Acc: 0.6992
+ Val Loss: 3.6689, Acc: 0.5690 Val Neg Acc: 0.6629, Nut Acc: 0.5336, Pos Acc: 0.8442
+2025-05-12 09:33:55 - INFO - Epoch 6/6: 
+Train Loss: 3.7882, Acc: 0.4955 Train Neg Acc: 0.7086, Nut Acc: 0.3982, Pos Acc: 0.7034
+ Val Loss: 3.6687, Acc: 0.5760 Val Neg Acc: 0.6465, Nut Acc: 0.5403, Pos Acc: 0.8434
+2025-05-12 09:35:14 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:39:27 - INFO - Epoch 1/4: 
+Train Loss: 3.7691, Acc: 0.5292 Train Neg Acc: 0.7203, Nut Acc: 0.4209, Pos Acc: 0.7298
+ Val Loss: 3.6384, Acc: 0.6470 Val Neg Acc: 0.5630, Nut Acc: 0.6350, Pos Acc: 0.8148
+2025-05-12 09:40:32 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:40:36 - INFO - Epoch 1/6: 
+Train Loss: 3.0417, Acc: 0.4025 Train Neg Acc: 0.4918, Nut Acc: 0.3657, Pos Acc: 0.4902
+ Val Loss: 2.7476, Acc: 0.5670 Val Neg Acc: 0.4600, Nut Acc: 0.5478, Pos Acc: 0.8810
+2025-05-12 09:40:40 - INFO - Epoch 2/6: 
+Train Loss: nan, Acc: 0.5359 Train Neg Acc: 0.6234, Nut Acc: 0.4583, Pos Acc: 0.6407
+ Val Loss: nan, Acc: 0.6290 Val Neg Acc: 0.5097, Nut Acc: 0.6364, Pos Acc: 0.7485
+2025-05-12 09:40:44 - INFO - Epoch 3/6: 
+Train Loss: nan, Acc: 0.5791 Train Neg Acc: 0.6545, Nut Acc: 0.4953, Pos Acc: 0.6746
+ Val Loss: nan, Acc: 0.6500 Val Neg Acc: 0.5346, Nut Acc: 0.6751, Pos Acc: 0.6983
+2025-05-12 09:40:47 - INFO - Epoch 4/6: 
+Train Loss: nan, Acc: 0.5780 Train Neg Acc: 0.6584, Nut Acc: 0.4950, Pos Acc: 0.6547
+ Val Loss: nan, Acc: 0.6500 Val Neg Acc: 0.5683, Nut Acc: 0.6496, Pos Acc: 0.7217
+2025-05-12 09:40:51 - INFO - Epoch 5/6: 
+Train Loss: nan, Acc: 0.5838 Train Neg Acc: 0.6696, Nut Acc: 0.4944, Pos Acc: 0.6877
+ Val Loss: nan, Acc: 0.6370 Val Neg Acc: 0.5155, Nut Acc: 0.6442, Pos Acc: 0.8370
+2025-05-12 09:40:55 - INFO - Epoch 6/6: 
+Train Loss: nan, Acc: 0.5922 Train Neg Acc: 0.6683, Nut Acc: 0.5041, Pos Acc: 0.6959
+ Val Loss: nan, Acc: 0.6510 Val Neg Acc: 0.5385, Nut Acc: 0.6615, Pos Acc: 0.7624
+2025-05-12 09:55:47 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:55:51 - INFO - Epoch 1/6: 
+Train Loss: nan, Acc: 0.3931 Train Neg Acc: 0.4540, Nut Acc: 0.3647, Pos Acc: 0.4530
+ Val Loss: 2.7790, Acc: 0.5910 Val Neg Acc: 0.5000, Nut Acc: 0.5780, Pos Acc: 0.8131
+2025-05-12 09:55:55 - INFO - Epoch 2/6: 
+Train Loss: nan, Acc: 0.5356 Train Neg Acc: 0.6140, Nut Acc: 0.4656, Pos Acc: 0.6265
+ Val Loss: nan, Acc: 0.6260 Val Neg Acc: 0.4744, Nut Acc: 0.6549, Pos Acc: 0.8239
+2025-05-12 09:55:59 - INFO - Epoch 3/6: 
+Train Loss: nan, Acc: 0.5781 Train Neg Acc: 0.6621, Nut Acc: 0.4958, Pos Acc: 0.6593
+ Val Loss: nan, Acc: 0.6390 Val Neg Acc: 0.5056, Nut Acc: 0.6580, Pos Acc: 0.7987
+2025-05-12 09:56:03 - INFO - Epoch 4/6: 
+Train Loss: nan, Acc: 0.5860 Train Neg Acc: 0.6478, Nut Acc: 0.5050, Pos Acc: 0.6807
+ Val Loss: nan, Acc: 0.6360 Val Neg Acc: 0.5161, Nut Acc: 0.6412, Pos Acc: 0.8309
+2025-05-12 09:56:07 - INFO - Epoch 5/6: 
+Train Loss: nan, Acc: 0.5863 Train Neg Acc: 0.6577, Nut Acc: 0.5010, Pos Acc: 0.6797
+ Val Loss: nan, Acc: 0.6530 Val Neg Acc: 0.5374, Nut Acc: 0.6638, Pos Acc: 0.7609
+2025-05-12 09:56:11 - INFO - Epoch 6/6: 
+Train Loss: nan, Acc: 0.6036 Train Neg Acc: 0.6939, Nut Acc: 0.5142, Pos Acc: 0.6812
+ Val Loss: nan, Acc: 0.6510 Val Neg Acc: 0.5174, Nut Acc: 0.6744, Pos Acc: 0.7692
+2025-05-12 09:56:40 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:56:44 - INFO - Epoch 1/6: 
+Train Loss: nan, Acc: 0.5942 Train Neg Acc: 0.6690, Nut Acc: 0.5077, Pos Acc: 0.7019
+ Val Loss: nan, Acc: 0.6460 Val Neg Acc: 0.5034, Nut Acc: 0.6757, Pos Acc: 0.8117
+2025-05-12 09:56:48 - INFO - Epoch 2/6: 
+Train Loss: nan, Acc: 0.5985 Train Neg Acc: 0.6800, Nut Acc: 0.5104, Pos Acc: 0.6864
+ Val Loss: nan, Acc: 0.6420 Val Neg Acc: 0.4676, Nut Acc: 0.7688, Pos Acc: 0.7061
+2025-05-12 09:56:52 - INFO - Epoch 3/6: 
+Train Loss: nan, Acc: 0.5957 Train Neg Acc: 0.6603, Nut Acc: 0.5156, Pos Acc: 0.6602
+ Val Loss: nan, Acc: 0.6520 Val Neg Acc: 0.5579, Nut Acc: 0.6512, Pos Acc: 0.7901
+2025-05-12 09:56:56 - INFO - Epoch 4/6: 
+Train Loss: nan, Acc: 0.5957 Train Neg Acc: 0.6755, Nut Acc: 0.5093, Pos Acc: 0.6855
+ Val Loss: nan, Acc: 0.6550 Val Neg Acc: 0.5102, Nut Acc: 0.7063, Pos Acc: 0.7345
+2025-05-12 09:57:01 - INFO - Epoch 5/6: 
+Train Loss: nan, Acc: 0.5964 Train Neg Acc: 0.6772, Nut Acc: 0.5050, Pos Acc: 0.6894
+ Val Loss: nan, Acc: 0.6530 Val Neg Acc: 0.5458, Nut Acc: 0.6627, Pos Acc: 0.7818
+2025-05-12 09:57:05 - INFO - Epoch 6/6: 
+Train Loss: nan, Acc: 0.6028 Train Neg Acc: 0.6651, Nut Acc: 0.5135, Pos Acc: 0.7079
+ Val Loss: nan, Acc: 0.6600 Val Neg Acc: 0.5433, Nut Acc: 0.6799, Pos Acc: 0.7565
+2025-05-12 09:57:08 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:57:12 - INFO - Epoch 1/6: 
+Train Loss: nan, Acc: 0.4144 Train Neg Acc: 0.4060, Nut Acc: 0.4204, Pos Acc: 0.4198
+ Val Loss: nan, Acc: 0.5950 Val Neg Acc: 0.4531, Nut Acc: 0.7105, Pos Acc: 0.5583
+2025-05-12 09:57:17 - INFO - Epoch 2/6: 
+Train Loss: nan, Acc: 0.4700 Train Neg Acc: 0.5694, Nut Acc: 0.4049, Pos Acc: 0.5992
+ Val Loss: nan, Acc: 0.4800 Val Neg Acc: -1.0000, Nut Acc: 0.4800, Pos Acc: -1.0000
+2025-05-12 09:57:22 - INFO - Epoch 3/6: 
+Train Loss: nan, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: nan, Acc: 0.4800 Val Neg Acc: -1.0000, Nut Acc: 0.4800, Pos Acc: -1.0000
+2025-05-12 09:57:26 - INFO - Epoch 4/6: 
+Train Loss: nan, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: nan, Acc: 0.4800 Val Neg Acc: -1.0000, Nut Acc: 0.4800, Pos Acc: -1.0000
+2025-05-12 09:57:31 - INFO - Epoch 5/6: 
+Train Loss: nan, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: nan, Acc: 0.4800 Val Neg Acc: -1.0000, Nut Acc: 0.4800, Pos Acc: -1.0000
+2025-05-12 09:57:34 - INFO - Epoch 6/6: 
+Train Loss: nan, Acc: 0.3333 Train Neg Acc: -1.0000, Nut Acc: 0.3333, Pos Acc: -1.0000
+ Val Loss: nan, Acc: 0.4800 Val Neg Acc: -1.0000, Nut Acc: 0.4800, Pos Acc: -1.0000
+2025-05-12 09:58:09 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 09:58:13 - INFO - Epoch 1/6: 
+Train Loss: 2.5417, Acc: 0.3842 Train Neg Acc: 0.4319, Nut Acc: 0.3593, Pos Acc: 0.4982
+ Val Loss: 2.2817, Acc: 0.5810 Val Neg Acc: 0.5281, Nut Acc: 0.5592, Pos Acc: 0.7692
+2025-05-12 09:58:17 - INFO - Epoch 2/6: 
+Train Loss: 2.3634, Acc: 0.5309 Train Neg Acc: 0.6204, Nut Acc: 0.4549, Pos Acc: 0.6493
+ Val Loss: 2.1520, Acc: 0.6260 Val Neg Acc: 0.5075, Nut Acc: 0.6336, Pos Acc: 0.7356
+2025-05-12 09:58:21 - INFO - Epoch 3/6: 
+Train Loss: 2.2609, Acc: 0.5841 Train Neg Acc: 0.6475, Nut Acc: 0.5052, Pos Acc: 0.6784
+ Val Loss: 2.1092, Acc: 0.6430 Val Neg Acc: 0.4959, Nut Acc: 0.6835, Pos Acc: 0.7091
+2025-05-12 09:58:25 - INFO - Epoch 4/6: 
+Train Loss: 2.2264, Acc: 0.5930 Train Neg Acc: 0.6545, Nut Acc: 0.5147, Pos Acc: 0.6805
+ Val Loss: 2.0890, Acc: 0.6550 Val Neg Acc: 0.5061, Nut Acc: 0.7055, Pos Acc: 0.7004
+2025-05-12 09:58:28 - INFO - Epoch 5/6: 
+Train Loss: 2.2105, Acc: 0.6005 Train Neg Acc: 0.6584, Nut Acc: 0.5218, Pos Acc: 0.6872
+ Val Loss: 2.0588, Acc: 0.6590 Val Neg Acc: 0.5219, Nut Acc: 0.6935, Pos Acc: 0.7131
+2025-05-12 09:58:32 - INFO - Epoch 6/6: 
+Train Loss: 2.2017, Acc: 0.6014 Train Neg Acc: 0.6653, Nut Acc: 0.5231, Pos Acc: 0.6772
+ Val Loss: 2.0668, Acc: 0.6480 Val Neg Acc: 0.5118, Nut Acc: 0.6875, Pos Acc: 0.7110
+2025-05-12 09:58:41 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 10:03:09 - INFO - Epoch 1/4: 
+Train Loss: 2.2615, Acc: 0.6014 Train Neg Acc: 0.6840, Nut Acc: 0.5132, Pos Acc: 0.6953
+ Val Loss: 1.9303, Acc: 0.6750 Val Neg Acc: 0.6543, Nut Acc: 0.6381, Pos Acc: 0.8372
+2025-05-12 10:08:07 - INFO - Epoch 2/4: 
+Train Loss: 2.0326, Acc: 0.6967 Train Neg Acc: 0.7589, Nut Acc: 0.5937, Pos Acc: 0.7947
+ Val Loss: 2.7673, Acc: 0.6970 Val Neg Acc: 0.5669, Nut Acc: 0.8172, Pos Acc: 0.6697
+2025-05-12 10:12:41 - INFO - Epoch 3/4: 
+Train Loss: 1.7292, Acc: 0.7787 Train Neg Acc: 0.8386, Nut Acc: 0.6855, Pos Acc: 0.8327
+ Val Loss: 2.8498, Acc: 0.7070 Val Neg Acc: 0.6201, Nut Acc: 0.7323, Pos Acc: 0.7338
+2025-05-12 10:16:39 - INFO - Epoch 4/4: 
+Train Loss: 1.3854, Acc: 0.8337 Train Neg Acc: 0.9144, Nut Acc: 0.7217, Pos Acc: 0.9042
+ Val Loss: 3.3810, Acc: 0.7040 Val Neg Acc: 0.5830, Nut Acc: 0.7796, Pos Acc: 0.7047
+2025-05-12 15:19:09 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 15:19:43 - INFO - Epoch 1/6: 
+Train Loss: 2.3497, Acc: 0.5206 Train Neg Acc: 0.5995, Nut Acc: 0.4462, Pos Acc: 0.6274
+ Val Loss: 2.0262, Acc: 0.6646 Val Neg Acc: 0.5744, Nut Acc: 0.6763, Pos Acc: 0.7238
+2025-05-12 15:20:15 - INFO - Epoch 2/6: 
+Train Loss: 2.2064, Acc: 0.6063 Train Neg Acc: 0.6697, Nut Acc: 0.5185, Pos Acc: 0.7052
+ Val Loss: 2.0327, Acc: 0.6727 Val Neg Acc: 0.5751, Nut Acc: 0.7046, Pos Acc: 0.6952
+2025-05-12 15:20:50 - INFO - Epoch 3/6: 
+Train Loss: 2.1818, Acc: 0.6120 Train Neg Acc: 0.6775, Nut Acc: 0.5255, Pos Acc: 0.7011
+ Val Loss: 2.0241, Acc: 0.6680 Val Neg Acc: 0.5497, Nut Acc: 0.6869, Pos Acc: 0.7697
+2025-05-12 15:21:24 - INFO - Epoch 4/6: 
+Train Loss: 2.1729, Acc: 0.6150 Train Neg Acc: 0.6795, Nut Acc: 0.5263, Pos Acc: 0.7104
+ Val Loss: 1.9799, Acc: 0.6754 Val Neg Acc: 0.6136, Nut Acc: 0.6786, Pos Acc: 0.7162
+2025-05-12 15:21:57 - INFO - Epoch 5/6: 
+Train Loss: 2.1657, Acc: 0.6189 Train Neg Acc: 0.6809, Nut Acc: 0.5300, Pos Acc: 0.7164
+ Val Loss: 1.9993, Acc: 0.6722 Val Neg Acc: 0.5661, Nut Acc: 0.6929, Pos Acc: 0.7331
+2025-05-12 15:22:31 - INFO - Epoch 6/6: 
+Train Loss: 2.1516, Acc: 0.6218 Train Neg Acc: 0.6852, Nut Acc: 0.5307, Pos Acc: 0.7255
+ Val Loss: 2.0011, Acc: 0.6726 Val Neg Acc: 0.5626, Nut Acc: 0.6930, Pos Acc: 0.7440
+2025-05-12 15:22:41 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 15:57:39 - INFO - Epoch 1/4: 
+Train Loss: 2.2055, Acc: 0.6419 Train Neg Acc: 0.7079, Nut Acc: 0.5406, Pos Acc: 0.7604
+ Val Loss: 2.3740, Acc: 0.6979 Val Neg Acc: 0.5872, Nut Acc: 0.8245, Pos Acc: 0.6512
+2025-05-12 16:32:36 - INFO - Epoch 2/4: 
+Train Loss: 2.0643, Acc: 0.7049 Train Neg Acc: 0.7684, Nut Acc: 0.6028, Pos Acc: 0.7881
+ Val Loss: 2.1013, Acc: 0.7278 Val Neg Acc: 0.6198, Nut Acc: 0.7854, Pos Acc: 0.7334
+2025-05-12 17:07:34 - INFO - Epoch 3/4: 
+Train Loss: 1.8434, Acc: 0.7622 Train Neg Acc: 0.8078, Nut Acc: 0.6730, Pos Acc: 0.8293
+ Val Loss: 2.3587, Acc: 0.7394 Val Neg Acc: 0.6678, Nut Acc: 0.7904, Pos Acc: 0.7180
+2025-05-12 17:43:11 - INFO - Epoch 4/4: 
+Train Loss: 1.6766, Acc: 0.7914 Train Neg Acc: 0.8417, Nut Acc: 0.6999, Pos Acc: 0.8579
+ Val Loss: 2.3502, Acc: 0.7379 Val Neg Acc: 0.6190, Nut Acc: 0.7954, Pos Acc: 0.7566
+2025-05-12 18:22:04 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 18:58:50 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 18:59:27 - INFO - Epoch 1/6: 
+Train Loss: 1.3492, Acc: 0.5028 Train Neg Acc: 0.6232, Nut Acc: 0.4209, Pos Acc: 0.6739
+ Val Loss: 1.1492, Acc: 0.6573 Val Neg Acc: 0.5812, Nut Acc: 0.6551, Pos Acc: 0.7486
+2025-05-12 18:59:59 - INFO - Epoch 2/6: 
+Train Loss: 1.2523, Acc: 0.5920 Train Neg Acc: 0.6912, Nut Acc: 0.4889, Pos Acc: 0.7306
+ Val Loss: 1.1276, Acc: 0.6625 Val Neg Acc: 0.6077, Nut Acc: 0.6461, Pos Acc: 0.7738
+2025-05-12 19:00:32 - INFO - Epoch 3/6: 
+Train Loss: 1.2464, Acc: 0.5955 Train Neg Acc: 0.6911, Nut Acc: 0.4909, Pos Acc: 0.7357
+ Val Loss: 1.1355, Acc: 0.6643 Val Neg Acc: 0.5859, Nut Acc: 0.6737, Pos Acc: 0.7142
+2025-05-12 19:01:05 - INFO - Epoch 4/6: 
+Train Loss: 1.2456, Acc: 0.6006 Train Neg Acc: 0.7022, Nut Acc: 0.4949, Pos Acc: 0.7343
+ Val Loss: 1.1275, Acc: 0.6647 Val Neg Acc: 0.5830, Nut Acc: 0.6583, Pos Acc: 0.7799
+2025-05-12 19:01:39 - INFO - Epoch 5/6: 
+Train Loss: 1.2308, Acc: 0.6033 Train Neg Acc: 0.7034, Nut Acc: 0.4954, Pos Acc: 0.7480
+ Val Loss: 1.1162, Acc: 0.6676 Val Neg Acc: 0.6129, Nut Acc: 0.6515, Pos Acc: 0.7739
+2025-05-12 19:02:12 - INFO - Epoch 6/6: 
+Train Loss: 1.2325, Acc: 0.6022 Train Neg Acc: 0.7043, Nut Acc: 0.4954, Pos Acc: 0.7399
+ Val Loss: 1.1199, Acc: 0.6685 Val Neg Acc: 0.5939, Nut Acc: 0.6614, Pos Acc: 0.7653
+2025-05-12 19:02:29 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 19:03:03 - INFO - Epoch 1/6: 
+Train Loss: 1.3058, Acc: 0.5487 Train Neg Acc: 0.6511, Nut Acc: 0.4540, Pos Acc: 0.6904
+ Val Loss: 1.1800, Acc: 0.6207 Val Neg Acc: 0.7988, Nut Acc: 0.6259, Pos Acc: 0.5889
+2025-05-12 19:03:35 - INFO - Epoch 2/6: 
+Train Loss: 1.2591, Acc: 0.5905 Train Neg Acc: 0.6800, Nut Acc: 0.4879, Pos Acc: 0.7230
+ Val Loss: 1.1340, Acc: 0.6421 Val Neg Acc: 0.5322, Nut Acc: 0.6474, Pos Acc: 0.8082
+2025-05-12 19:04:08 - INFO - Epoch 3/6: 
+Train Loss: 1.2315, Acc: 0.6026 Train Neg Acc: 0.6886, Nut Acc: 0.4995, Pos Acc: 0.7304
+ Val Loss: 1.1129, Acc: 0.6680 Val Neg Acc: 0.5523, Nut Acc: 0.6895, Pos Acc: 0.7532
+2025-05-12 19:04:41 - INFO - Epoch 4/6: 
+Train Loss: 1.2134, Acc: 0.6168 Train Neg Acc: 0.6983, Nut Acc: 0.5140, Pos Acc: 0.7471
+ Val Loss: 1.1028, Acc: 0.6746 Val Neg Acc: 0.5872, Nut Acc: 0.6815, Pos Acc: 0.7474
+2025-05-12 19:05:14 - INFO - Epoch 5/6: 
+Train Loss: 1.2090, Acc: 0.6193 Train Neg Acc: 0.7035, Nut Acc: 0.5149, Pos Acc: 0.7478
+ Val Loss: 1.1024, Acc: 0.6775 Val Neg Acc: 0.5789, Nut Acc: 0.6851, Pos Acc: 0.7724
+2025-05-12 19:05:48 - INFO - Epoch 6/6: 
+Train Loss: 1.1961, Acc: 0.6279 Train Neg Acc: 0.7053, Nut Acc: 0.5238, Pos Acc: 0.7603
+ Val Loss: 1.0971, Acc: 0.6785 Val Neg Acc: 0.5687, Nut Acc: 0.7010, Pos Acc: 0.7481
+2025-05-12 19:06:41 - INFO - Training BertPreTrainedClassifier on cuda
+2025-05-12 19:43:26 - INFO - Epoch 1/4: 
+Train Loss: 1.3049, Acc: 0.5673 Train Neg Acc: 0.6988, Nut Acc: 0.4613, Pos Acc: 0.7180
+ Val Loss: 1.1869, Acc: 0.6360 Val Neg Acc: 0.4474, Nut Acc: 0.7889, Pos Acc: 0.7393
+2025-05-12 20:20:19 - INFO - Epoch 2/4: 
+Train Loss: 1.1668, Acc: 0.6653 Train Neg Acc: 0.7539, Nut Acc: 0.5517, Pos Acc: 0.7681
+ Val Loss: 1.0575, Acc: 0.7197 Val Neg Acc: 0.6022, Nut Acc: 0.7819, Pos Acc: 0.7326
+2025-05-12 20:57:06 - INFO - Epoch 3/4: 
+Train Loss: 1.0318, Acc: 0.7488 Train Neg Acc: 0.8091, Nut Acc: 0.6417, Pos Acc: 0.8391
+ Val Loss: 1.1278, Acc: 0.6638 Val Neg Acc: 0.5654, Nut Acc: 0.8826, Pos Acc: 0.5941
+2025-05-12 21:33:53 - INFO - Epoch 4/4: 
+Train Loss: 0.9062, Acc: 0.8033 Train Neg Acc: 0.8567, Nut Acc: 0.7051, Pos Acc: 0.8732
+ Val Loss: 1.2367, Acc: 0.7307 Val Neg Acc: 0.5936, Nut Acc: 0.8152, Pos Acc: 0.7471
