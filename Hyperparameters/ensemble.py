@@ -73,7 +73,7 @@ def main(do_test:bool = False, do_validate:bool = True):
                    ]
     # names of the underlying encoder model used in the ensemble
     params = [d_params] * len(model_names)
-    ensemble_list = [4,6,8]  # use this to identify which model indexes to ensemble for this run
+    ensemble_list = [0]  # use this to identify which model indexes to ensemble for this run
     # ensemble_list = range(len(model_names)) # use this to run all models
 
 

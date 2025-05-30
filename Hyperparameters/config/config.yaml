@@ -8,7 +8,7 @@ dataloader:
   pre_process_name: 'NONE' # use this to define which pre-processing option to use.
   use_augmented_data: false # use the augmented back translated data
 model:
-  name: 'distilbert/distilbert-base-uncased' # encoder model to use from hugging face
+  name: 'microsoft/deberta-v3-large' # encoder model to use from hugging face, for best results use microsoft/deberta-v3-base or microsoft/deberta-v3-large, for our baselines we used distilbert/distilbert-base-uncased
   test_model: false #use this to test model and save csv after run
   head: 'mlp' # use this to define the classification head
   mean_pool: false # use this to mean pool the hidden state of encoder, rather than just taking first '[CLS]' output
