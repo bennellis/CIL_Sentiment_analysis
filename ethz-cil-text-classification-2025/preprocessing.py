@@ -69,4 +69,14 @@ class Preprocessor:
         return text
 
     def transform(self, texts):
-        return [self.clean_text(text) for text in texts]
+        cleaned = []
+        kept_indices = []
+
+        for i, text in enumerate(texts):
+            cleaned_text = self.clean_text(text)
+            if isinstance(cleaned_text, str) and cleaned_text.strip():
+                cleaned.append(cleaned_text)
+                kept_indices.append(i)
+
+        # return indices for labels
+        return cleaned, kept_indices
