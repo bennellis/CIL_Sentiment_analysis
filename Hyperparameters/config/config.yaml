@@ -24,7 +24,7 @@ model:
 data:
   csv_path: 'data/Sentiment/training.csv' #location of training .csv file
 training:
-  frozen_epochs: 1 # how many epochs to run while encoder is frozen
+  frozen_epochs: 10 # how many epochs to run while encoder is frozen
   unfrozen_epochs: 2 # how many epochs to fine tune encoder unfrozen
   validations_per_epoch: 10 # how many validation runs per training epoch
   keep_frozen_layers: 0 # how many layers of encoder to unfreeze
