@@ -28,52 +28,27 @@ Challenges: sarcasm, mixed sentiments, noisy text
 Preprocessing
 We evaluated multiple preprocessing pipelines depending on the model type:
 
-For Traditional Models
 Lowercasing
-
 Removing URLs, punctuation, and stopwords
-
 Normalizing repeated characters
-
 Lemmatization
-
 Translating to English
-
-For Transformer-Based Models
-Light preprocessing:
-
-Expanding contractions
-
-Removing URLs
-
-Normalizing repeated characters
-
-Translating to English
-
-Avoided lemmatization/stopword removal due to conflict with model pretraining
 
 We also performed back-translation for data augmentation.
 
-Models
+
 Baselines
-BoW + Logistic Regression
+  BoW + Logistic Regression
+  DistilBERT + MLP Head
+  Human Labeling Benchmark: ~87% accuracy on 500 samples
 
-DistilBERT + MLP Head
-
-Simple Feedforward Neural Network
-
-Human Labeling Benchmark: ~87% accuracy on 500 samples
 
 Transformer Models
-DistilBERT
-
-BERT (Base & Large)
-
-RoBERTa (Base & Large)
-
-ModernBERT (Base & Large)
-
-DeBERTa-v3 (Base & Large)
+  DistilBERT
+  BERT (Base & Large)
+  RoBERTa (Base & Large)
+  ModernBERT (Base & Large)
+  DeBERTa-v3 (Base & Large)
 
 Fine-tuning Strategies
 Fully frozen encoder with trained head
@@ -82,11 +57,11 @@ Full fine-tuning of encoder + head (best performance)
 
 Partial fine-tuning (less effective)
 
-Best results were obtained using full fine-tuning of DeBERTa-v3, achieving a 92.0 validation score and 91.0 test score
-After ensembling both DeBERTa-v3 base and DeBERTa-v3 large from different checkpoints and using various classification heads, we were able to achieve a test score of 91.5
+Best results were obtained using full fine-tuning of DeBERTa-v3, achieving a 92.0 validation score and 90.4 test score
+After ensembling DeBERTa-v3 large from different checkpoints, we were able to achieve a test score of 90.8
 
 Custom Loss Function
-We used a custom scoring function (L) focused on penalizing large misclassification errors more heavily:
+We used a custom scoring function focused on penalizing large misclassification errors more heavily:
 
 Score = 1.0 for correct predictions
 
@@ -94,24 +69,19 @@ Score = 0.5 for one-class-off predictions
 
 Score = 0.0 for two-class-off predictions
 
+
 To optimize this, we experimented with:
-
-MAE-based soft loss
-
-Hybrid MAE + Cross Entropy loss (for smoother gradients)
-
-Class Distance Weighted Cross Entropy (CDW-CE) — our final choice
-
-which balances meaningful gradients with stronger penalties for severe misclassifications.
+  MAE-based soft loss
+  Hybrid MAE + Cross Entropy loss (for smoother gradients)
+  Class Distance Weighted Cross Entropy (CDW-CE) — our final choice which balances meaningful gradients with stronger penalties for severe misclassifications.
 
 Results & Observations
 Data cleaning and preprocessing did not significantly impact model performance.
-
 Full fine-tuning beats using a frozen encoder methods by ~4%.
-
 CDW-CE outperforms basic MAE or CE in terms of both gradient stability and alignment with real-world cost of error.
-
 Early stopping and validation monitoring are crucial to avoid overfitting.
+
+
 
 Find our full report uploaded with our github.
 
